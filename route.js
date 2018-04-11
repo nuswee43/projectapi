@@ -10,7 +10,8 @@ var knex = require('knex')({
     }
 })
 router.get('/getPatient', async (req, res) => {
-    var data = await knex.table('Patient').select()
+    var data = await knex.table('Patient')
+    .select()
     res.send(data);
 })
 
@@ -64,6 +65,15 @@ router.get('/getRoom/:id', async (req, res) => {
         .where('departmentId', req.params.id)
     res.send(data);
 })
+//doctor
+router.get('/getDoctor/:id', async (req, res) => {
+    var data = await knex.table('Doctor')
+        .select('empId')
+        .where('roomId', req.params.id )
+    res.send(data);
+})
+
+
 
 router.get('/loginNurse/:id', async (req, res) => {
     var data = await knex.table('Nurse')
@@ -71,6 +81,7 @@ router.get('/loginNurse/:id', async (req, res) => {
         .where('empId', req.params.id)
     res.send(data);
 })
+
 
 
 
@@ -122,13 +133,28 @@ router.post('/getHN', async (req, res) => {
     res.send(data);
 })
 
-router.post('/getRoom', async (req, res) => {
-    var data = await knex.table('Room')
+// router.post('/getRoom', async (req, res) => {
+//     var data = await knex.table('Room')
+//         .select()
+//         .where({ HN: req.body.HN })
+//     res.send(data);
+// })
+
+// router.get('/getRoom', async (req, res) => {
+//     var data = await knex.table('Room')
+//         .join('Department','Room.departmentId','=','Department.departmentId')
+//         .join('Doctor','Department.empId','=','Doctor.empId')
+//         .select()
+//     res.send(data);
+// })
+
+
+
+router.get('/getNurse', async (req, res) => {
+    var data = await knex.table('Nurse')
         .select()
-        .where({ HN: req.body.HN })
     res.send(data);
 })
-
 
 router.get('/getQueue', async (req, res) => {
     var data = await knex.table('Queue')
@@ -136,7 +162,6 @@ router.get('/getQueue', async (req, res) => {
         .join('Department', 'Room.departmentId', '=', 'Department.departmentId')
         .join('Patient', 'Queue.HN', '=', 'Patient.HN')
         .select()
-
     res.send(data);
 })
 
