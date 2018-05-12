@@ -25,7 +25,7 @@ router.get('/getMax', async (req, res) => {
     res.send('EIEI');
 })
 
-//Insert to Queue Table
+
 router.post('/addPatientQ', async (req, res) => {
 
 var maxHN = await knex.table('Queue')
