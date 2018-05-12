@@ -191,6 +191,14 @@ router.get('/getQueue', async (req, res) => {
     res.send(data);
 })
 
+router.get('/getqueuqueue', async (req, res) => {
+    var data = await knex.table('Queue')
+       
+        .select()
+        
+    res.send(data);
+})
+
 router.post('/updateQueue', async (req, res) => {
     var data = await knex.table('Queue')
         .where('HN', req.body.HN)
