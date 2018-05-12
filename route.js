@@ -106,10 +106,16 @@ router.get('/getDoctor/:id', async (req, res) => {
         .where('roomId', req.params.id)
     res.send(data);
 })
-
+router.get('/doctorTime', async (req, res) => {
+    var data = await knex.table('Doctor')
+        .select()
+        
+    res.send(data);
+})
 router.get('/currentQwithDoctor/:id', async (req, res) => {
     var data = await knex.table('Queue')
         .join('Patient','Queue.HN','=','Patient.HN')
+        .join('Doctor','Queue.doctorId','=','Doctor.empId')
         .where('statusId', 3)
         .where('doctorId', req.params.id)
     res.send(data)
@@ -179,6 +185,9 @@ router.get('/getQueue', async (req, res) => {
         .join('Room', 'Queue.roomId', '=', 'Room.roomId')
         .join('Department', 'Room.departmentId', '=', 'Department.departmentId')
         .join('Patient', 'Queue.HN', '=', 'Patient.HN')
+        .join('Doctor','Queue.doctorId','=','Doctor.empId')
+        .join('Timetable','Queue.doctorId','=','Timetable.doctorId' )
+        // .join('Doctor','Queue.empId','=','Doctor.doctorId')
         .select()
         .where('statusId', 1)
     res.send(data);
