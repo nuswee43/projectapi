@@ -186,8 +186,6 @@ router.get('/getQueue', async (req, res) => {
         .join('Department', 'Room.departmentId', '=', 'Department.departmentId')
         .join('Patient', 'Queue.HN', '=', 'Patient.HN')
         .join('Doctor','Queue.doctorId','=','Doctor.empId')
-        // .join('Timetable','Queue.doctorId','=','Timetable.doctorId' )
-        // .join('Doctor','Queue.empId','=','Doctor.doctorId')
         .select()
         .where('statusId', 1)
     res.send(data);
