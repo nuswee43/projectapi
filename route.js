@@ -29,8 +29,10 @@ router.get('/getMax', async (req, res) => {
 router.post('/addPatientQ', async (req, res) => {
 
 var maxHN = await knex.table('Queue')
+            // .join('Room','Queue.roomId','=','Room.roomid')
             .select()
             .where('roomId', req.body.roomId)
+            // .andwhere('departmentId', req.body.departId)
             .max('queueId as maxQueueId')
         console.log(maxHN[0].maxQueueId)
         res.send('EIEI');
@@ -73,7 +75,7 @@ router.get('/checkHNatDepartment/:id', async (req, res) => {
     var data = await knex.table('Queue')
         .join('Room', 'Queue.roomId', '=', 'Room.roomId')
         .join('Department', 'Room.departmentId', '=', 'Department.departmentId')
-        .select('HN')
+        .select()
         .where('Department.departmentId', req.params.id)
         .where('statusId','!=',  4)
     res.send(data);
@@ -83,6 +85,14 @@ router.get('/checkHNatDepartment/:id', async (req, res) => {
 router.get('/getDepartment', async (req, res) => {
     var data = await knex.table('Department')
         .select()
+        .where('type',1)
+    res.send(data);
+})
+
+router.get('/getLab', async (req, res) => {
+    var data = await knex.table('Department')
+        .select()
+        .where('type',2)
     res.send(data);
 })
 
@@ -90,6 +100,7 @@ router.get('/getDepartment/:id', async (req, res) => {
     var data = await knex.table('Department')
         .select()
         .where('departmentId', req.params.id)
+        
     res.send(data);
 })
 
@@ -193,8 +204,7 @@ router.get('/getQueue', async (req, res) => {
 
 router.get('/getqueuqueue', async (req, res) => {
     var data = await knex.table('Queue')
-       
-        .select()
+       .select()
         
     res.send(data);
 })
@@ -222,6 +232,16 @@ router.get('/getDate', async (req, res) => {
         .select('timeStart', 'timeEnd')
 
     res.send(data);
+})
+
+//forward to another department 
+router.post('/updateForward', async (req, res) => {
+    var data = await knex.table('Queue')
+        .where('HN', req.body.HN)
+        .update({
+            statusId: 3,
+        })
+    res.send('data')
 })
 
 
