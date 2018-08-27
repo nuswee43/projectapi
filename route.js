@@ -1,248 +1,396 @@
-var moment = require('moment');
-const express = require('express')
-var router = express.Router()
-var knex = require('knex')({
-    client: 'mysql',
-    connection: {
-        host: '128.199.98.237',
-        user: 'test',
-        password: 'test',
-        database: 'PatientQueue'
-    }
-})
-router.get('/getPatient', async (req, res) => {
-    var data = await knex.table('Patient')
-        .select()
-    res.send(data);
-})
+var moment = require("moment");
+const express = require("express");
+var router = express.Router();
+var knex = require("knex")({
+  client: "mysql",
+  connection: {
+    host: "128.199.98.237",
+    user: "test",
+    password: "test",
+    database: "PatientQueue"
+  }
+});
+router.get("/getPatient", async (req, res) => {
+  var data = await knex.table("Patient").select();
+  res.send(data);
+});
 
-router.get('/getMax', async (req, res) => {
-    var maxHN = await knex.table('Queue')
-        .select()
-        .where('roomId', 1)
-        .max('queueId as maxQueueId')
-    console.log(maxHN[0].maxQueueId)
-    res.send('EIEI');
-})
+router.get("/getMax", async (req, res) => {
+  var maxHN = await knex
+    .table("Queue")
+    .select()
+    .where("roomId", 1)
+    .max("queueId as maxQueueId");
+  console.log(maxHN[0].maxQueueId);
+  res.send("EIEI");
+});
 
+router.post("/addPatientQ", async (req, res) => {
+  var maxHN = await knex
+    .table("Queue")
+    // .join('Room','Queue.roomId','=','Room.roomid')
+    .select()
+    .where("roomId", req.body.roomId)
+    // .andwhere('departmentId', req.body.departId)
+    .max("queueId as maxQueueId");
+  console.log(maxHN[0].maxQueueId);
+  res.send("EIEI");
+  await knex.table("Queue").insert({
+    queueId: maxHN[0].maxQueueId + 1,
+    roomId: req.body.roomId, //เปลียน
+    Date: req.body.date,
+    statusId: req.body.statusId,
+    HN: req.body.HN,
+    doctorId: req.body.doctorId, //เปลียน
+    forward: req.body.forward,
+    nurseId: req.body.nurseId
+  });
+  res.send("Success");
+  // var checkTime = await knex.table('Timetable')
+  //     .join('Doctor', 'Timetable.doctorId', '=', 'Doctor.empId')
 
-router.post('/addPatientQ', async (req, res) => {
+  //     //join doctor get deperment แล้วเอา department id มา where
+  //     .where({
+  //         day: req.body.day,
+  //         month: req.body.month,
+  //         year: req.body.year,
+  //         departmentId: req.body.departmentId
+  //     })
 
-var maxHN = await knex.table('Queue')
-            // .join('Room','Queue.roomId','=','Room.roomid')
-            .select()
-            .where('roomId', req.body.roomId)
-            // .andwhere('departmentId', req.body.departId)
-            .max('queueId as maxQueueId')
-        console.log(maxHN[0].maxQueueId)
-        res.send('EIEI');
-        await knex.table('Queue')
-            .insert({
-                queueId: maxHN[0].maxQueueId + 1,
-                roomId: req.body.roomId, //เปลียน
-                Date: req.body.date,
-                statusId: req.body.statusId,
-                HN: req.body.HN,
-                doctorId: req.body.doctorId,//เปลียน
-                forward: req.body.forward,
-                nurseId: req.body.nurseId
-            })
-        res.send('Success')
-            // var checkTime = await knex.table('Timetable')
-    //     .join('Doctor', 'Timetable.doctorId', '=', 'Doctor.empId')
+  //     .select()
+  // var checkRangeTime = checkTime.filter(check => {
+  //     isAfter = moment().isAfter(moment(check.timeStart, 'HH:mm:ss'))
+  //     isBefore = moment().isBefore(moment(check.timeEnd, 'HH:mm:ss'))
 
-    //     //join doctor get deperment แล้วเอา department id มา where 
-    //     .where({
-    //         day: req.body.day,
-    //         month: req.body.month,
-    //         year: req.body.year,
-    //         departmentId: req.body.departmentId
-    //     })
-
-    //     .select()
-    // var checkRangeTime = checkTime.filter(check => {
-    //     isAfter = moment().isAfter(moment(check.timeStart, 'HH:mm:ss'))
-    //     isBefore = moment().isBefore(moment(check.timeEnd, 'HH:mm:ss'))
-
-    //     // (check.timeStart >= req.body.timeFormat) && (check.timeEnd <= req.body.timeFormat)
-    //     return isAfter && isBefore
-    // })
-    // console.log(checkRangeTime)
-    
-})
+  //     // (check.timeStart >= req.body.timeFormat) && (check.timeEnd <= req.body.timeFormat)
+  //     return isAfter && isBefore
+  // })
+  // console.log(checkRangeTime)
+});
 //Check HN IN Department
-router.get('/checkHNatDepartment/:id', async (req, res) => {
-    var data = await knex.table('Queue')
-        .join('Room', 'Queue.roomId', '=', 'Room.roomId')
-        .join('Department', 'Room.departmentId', '=', 'Department.departmentId')
-        .select()
-        .where('Department.departmentId', req.params.id)
-        .where('statusId','!=',  4)
-    res.send(data);
+router.get("/checkHNatDepartment/:id", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .select()
+    .where("Department.departmentId", req.params.id)
+    .where("statusId", "!=", 4);
+  res.send(data);
+});
 
-})
+//get all department
+router.get("/getDepartment", async (req, res) => {
+  var data = await knex
+    .table("Department")
+    .select()
+    .where("type", 1);
+  res.send(data);
+});
+//get all room
+// router.get('/getDepartment', async (req, res) => {
+//     var data = await knex.table('Room')
+//         .select()
+//     res.send(data);
+// })
 
-router.get('/getDepartment', async (req, res) => {
-    var data = await knex.table('Department')
-        .select()
-        .where('type',1)
-    res.send(data);
-})
+router.get("/getLab", async (req, res) => {
+  var data = await knex
+    .table("Department")
+    .select()
+    .where("type", 2);
+  res.send(data);
+});
 
-router.get('/getLab', async (req, res) => {
-    var data = await knex.table('Department')
-        .select()
-        .where('type',2)
-    res.send(data);
-})
+router.get("/getDepartment/:id", async (req, res) => {
+  var data = await knex
+    .table("Department")
+    .select()
+    .where("departmentId", req.params.id);
 
-router.get('/getDepartment/:id', async (req, res) => {
-    var data = await knex.table('Department')
-        .select()
-        .where('departmentId', req.params.id)
-        
-    res.send(data);
-})
+  res.send(data);
+});
+//check room with department
+// router.get('/roomsWithDoctos/:id', async (req, res) => {
+//     var data = await knex.table('Timetable')
+//         .join('Doctor', 'Timetable.doctorId', '=', 'Doctor.empId')
+//         .select()
+//         .where('departmentId', req.params.id)
 
-router.get('/getRoom/:id', async (req, res) => {
-    var data = await knex.table('Room')
-        .select()
-        .where('departmentId', req.params.id)
-    res.send(data);
-})
+//     res.send(data);
+// })
+
+router.get("/getRoom/:id", async (req, res) => {
+  var data = await knex
+    .table("Room")
+    .select()
+    .where("departmentId", req.params.id);
+  res.send(data);
+});
+
+router.get("/getTheRoom", async (req, res) => {
+  var data = await knex.table("Room").select();
+  res.send(data);
+});
 //doctor
-router.get('/getDoctor/:id', async (req, res) => {
-    var data = await knex.table('Timetable')
-        .select('doctorId')
-        .where('roomId', req.params.id)
-    res.send(data);
-})
-router.get('/doctorTime', async (req, res) => {
-    var data = await knex.table('Doctor')
-        .select()
-        
-    res.send(data);
-})
-router.get('/currentQwithDoctor/:id', async (req, res) => {
-    var data = await knex.table('Queue')
-        .join('Patient','Queue.HN','=','Patient.HN')
-        .join('Doctor','Queue.doctorId','=','Doctor.empId')
-        .where('statusId', 3)
-        .where('doctorId', req.params.id)
-    res.send(data)
-})
+router.get("/getDoctor/:id", async (req, res) => {
+  var data = await knex
+    .table("Timetable")
+    .select("doctorId")
+    .where("roomId", req.params.id);
+  res.send(data);
+});
 
-router.post('/getListDoctor', async (req, res) => {
-    
-    var data = await knex.table('Timetable')
-        .join('Doctor', 'Timetable.doctorId', '=', 'Doctor.empId')
-        .select()
-        .where(
-            'day', req.body.day,
-        )
-        .whereIn('month', req.body.month,)
-        .whereIn('year', req.body.year,)
-        .whereIn('departmentId',req.body.departmentId)
-    res.send(data);
-    console.log(data)
-})
+router.get("/doctorTime", async (req, res) => {
+  var data = await knex.table("Doctor").select();
 
+  res.send(data);
+});
 
-router.delete('/deletePatientQ', async (req, res) => {
-    var data = await knex.table('Queue')
-        .where({
-            HN: req.body.HN
-        })
-        .delete()
-    res.end('success')
-})
+//
+router.get("/currentQwithDoctor/:id", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .where("statusId", 3)
+    .where("doctorId", req.params.id);
+  res.send(data);
+});
 
-router.post('/checkHN', async (req, res) => {
-    var data = await knex.table('Patient')
-        .select()
-        .where({
-            HN: req.body.HN,
-            phoneNumber: req.body.phoneNumber
-        })
-    res.send(data);
-})
+router.post("/getListDoctor", async (req, res) => {
+  var data = await knex
+    .table("Timetable")
+    .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
+    .select()
+    .where("day", req.body.day)
+    .whereIn("month", req.body.month)
+    .whereIn("year", req.body.year)
+    .whereIn("departmentId", req.body.departmentId);
+  res.send(data);
+  console.log(data);
+});
+// เช็ค forwardDepertment ID
+router.post("/getRoomAndDoctor", async (req, res) => {
+  var data = await knex
+    .table("Timetable")
+    .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
+    .select()
+    .where("day", req.body.day)
+    .whereIn("month", req.body.month)
+    .whereIn("year", req.body.year)
+    .whereIn("departmentId", req.body.forwardDepartmentId);
 
-router.post('/checkUsername', async (req, res) => {
-    var data = await knex.table('Nurse')
-        .select()
-        .where({
-            Username: req.body.Username,
-            Password: req.body.Password
-        })
-    res.send(data);
-})
+  res.send(data);
+  console.log(data);
+});
 
-router.post('/getHN', async (req, res) => {
-    var data = await knex.table('Patient')
-        .select()
-        .where('HN', req.body.HN)
-    res.send(data);
-})
+router.delete("/deletePatientQ", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .where({
+      HN: req.body.HN
+    })
+    .delete();
+  res.end("success");
+});
 
+router.post("/checkHN", async (req, res) => {
+  var data = await knex
+    .table("Patient")
+    .select()
+    .where({
+      HN: req.body.HN,
+      phoneNumber: req.body.phoneNumber
+    });
+  res.send(data);
+});
 
-router.get('/getNurse', async (req, res) => {
-    var data = await knex.table('Nurse')
-        .select()
-    res.send(data);
-})
+router.post("/checkUsername", async (req, res) => {
+  var data = await knex
+    .table("Nurse")
+    .join("Department", "Department.departmentId", "=", "Nurse.departmentId")
+    .select()
+    .where({
+      Username: req.body.Username,
+      Password: req.body.Password
+    });
+  res.send(data);
+});
 
-router.get('/getQueue', async (req, res) => {
-    var data = await knex.table('Queue')
-        .join('Room', 'Queue.roomId', '=', 'Room.roomId')
-        .join('Department', 'Room.departmentId', '=', 'Department.departmentId')
-        .join('Patient', 'Queue.HN', '=', 'Patient.HN')
-        .join('Doctor','Queue.doctorId','=','Doctor.empId')
-        .select()
-        .where('statusId', 1)
-    res.send(data);
-})
+router.post("/getHN", async (req, res) => {
+  var data = await knex
+    .table("Patient")
+    .select()
+    .where("HN", req.body.HN);
+  res.send(data);
+});
 
-router.get('/getqueuqueue', async (req, res) => {
-    var data = await knex.table('Queue')
-       .select()
-        
-    res.send(data);
-})
+router.get("/getNurse", async (req, res) => {
+  var data = await knex.table("Nurse").select();
+  res.send(data);
+});
 
-router.post('/updateQueue', async (req, res) => {
-    var data = await knex.table('Queue')
-        .where('HN', req.body.HN)
-        .update({
-            statusId: 3,
-        })
-    res.send('data')
+//queues
+router.get("/getQueue", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .join("Status","Queue.statusId","=","Status.statusId" )
+    .select()
+    .where("Queue.statusId", 1);
+  res.send(data);
+});
 
-    if (req.body.previousHN !== '') {
-        await knex.table('Queue')
-            .where('HN', req.body.previousHN)
-            .update({
-                statusId: 4,
-            })
+//lab queue ----------------
+router.get("/getLabQueue/:roomId", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .select()
+    .where("statusId", 2)
+    .where("Room.roomId", req.params.roomId);
+  res.send(data);
+});
+//----------------------
+router.get("/getListLabQueue", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .select()
+    .where("statusId", 2);
+
+  res.send(data);
+});
+//----------------------
+router.get("/getqueuqueue", async (req, res) => {
+  var data = await knex.table("Queue").select();
+
+  res.send(data);
+});
+
+router.post("/updateQueue", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .where("HN", req.body.HN)
+    .update({
+      statusId: 3
+    });
+  res.send("data");
+
+  if (req.body.previousHN !== "") {
+    await knex
+      .table("Queue")
+      .where("HN", req.body.previousHN)
+      .update({
+        statusId: 4
+      });
+  }
+});
+//
+router.post("/updateCurrentLabQueue", async (req, res) => {
+  console.log(req.body.HN)
+  var data = await knex
+    .table("Queue")
+    .where("HN", req.body.HN)
+    .update({
+      statusId: 1
+    });
+  res.send(data);
+});
+//
+
+router.post("/updateForwardQueue", async (req, res) => {
+  var maxHN = await knex
+    .table("Queue")
+    .select()
+    .where("roomId", req.body.roomId)
+    .max("queueId as maxQueueId");
+
+  let tmp = {}
+  if(req.body.typeForward === "Department"){
+    tmp = {
+      statusId: 1,
+      roomId: req.body.roomId,
+      forward: req.body.forward,
+      doctorId: req.body.doctorId,
+      queueId: maxHN[0].maxQueueId + 1
     }
+  }else if (req.body.typeForward === "Lab"){
+    tmp = {
+      statusId: 2,
+      roomId: req.body.roomId,
+      forward: req.body.forward,
+      doctorId: req.body.doctorId,
+    }
+  }
+  var data = await knex
+    .table("Queue")
+    .where("HN", req.body.HN)
+    //.increment('queueId', 1)
+    .update(tmp);
+  res.send("data");
+});
 
-})
+router.get("/getDate", async (req, res) => {
+  var data = await knex.table("Timetable").select("timeStart", "timeEnd");
 
-router.get('/getDate', async (req, res) => {
-    var data = await knex.table('Timetable')
-        .select('timeStart', 'timeEnd')
+  res.send(data);
+});
 
-    res.send(data);
-})
+//forward to another department
+router.post("/updateForward", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .where("HN", req.body.HN)
+    .update({
+      statusId: 3
+    });
+  res.send("data");
+});
 
-//forward to another department 
-router.post('/updateForward', async (req, res) => {
-    var data = await knex.table('Queue')
-        .where('HN', req.body.HN)
-        .update({
-            statusId: 3,
-        })
-    res.send('data')
-})
+module.exports = router;
 
+// //Get Patient Data 
+// router.get("/getPatientData", async (req, res) => {
+//   var data = await knex.table("Queue")
+//   .join("Patient", "Queue.HN", "=", "Patient.HN")
+//   .select();
+//   res.send(data);
+// });
 
-module.exports = router
+//getQueueData
+router.post("/getQueueData", async (req, res) => {
+  console.log(req.body.HN)
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .join("Status","Queue.statusId","=","Status.statusId")
+    // .join("Appointment","Queue.HN","=","Appointment.HN")
+    .select()
+    .where("Queue.HN",req.body.HN)
+    .where("Queue.statusId", "!=", 4);
+  res.send(data);
+});
+
+router.get("/getCurrentQueue/:roomId", async (req, res) => {
+  var data = await knex
+  .table("Queue")
+  .select("queueId")
+  .where("roomId",req.params.roomId)
+  .where("statusId", 3)
+
+  res.send(data);
+});
