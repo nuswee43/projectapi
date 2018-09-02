@@ -239,7 +239,7 @@ router.get("/getQueue", async (req, res) => {
     .join("Department", "Room.departmentId", "=", "Department.departmentId")
     .join("Patient", "Queue.HN", "=", "Patient.HN")
     .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
-    .join("Status","Queue.statusId","=","Status.statusId" )
+    .join("Status", "Queue.statusId", "=", "Status.statusId")
     .select()
     .where("Queue.statusId", 1);
   res.send(data);
@@ -298,7 +298,7 @@ router.post("/updateQueue", async (req, res) => {
 });
 //
 router.post("/updateCurrentLabQueue", async (req, res) => {
-  console.log(req.body.HN)
+  console.log(req.body.HN);
   var data = await knex
     .table("Queue")
     .where("HN", req.body.HN)
@@ -316,22 +316,22 @@ router.post("/updateForwardQueue", async (req, res) => {
     .where("roomId", req.body.roomId)
     .max("queueId as maxQueueId");
 
-  let tmp = {}
-  if(req.body.typeForward === "Department"){
+  let tmp = {};
+  if (req.body.typeForward === "Department") {
     tmp = {
       statusId: 1,
       roomId: req.body.roomId,
       forward: req.body.forward,
       doctorId: req.body.doctorId,
       queueId: maxHN[0].maxQueueId + 1
-    }
-  }else if (req.body.typeForward === "Lab"){
+    };
+  } else if (req.body.typeForward === "Lab") {
     tmp = {
       statusId: 2,
       roomId: req.body.roomId,
       forward: req.body.forward,
-      doctorId: req.body.doctorId,
-    }
+      doctorId: req.body.doctorId
+    };
   }
   var data = await knex
     .table("Queue")
@@ -358,9 +358,54 @@ router.post("/updateForward", async (req, res) => {
   res.send("data");
 });
 
+//getQueueData
+router.post("/getQueueData", async (req, res) => {
+  console.log(req.body.HN);
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .join("Status", "Queue.statusId", "=", "Status.statusId")
+    // .join("Appointment","Queue.HN","=","Appointment.HN")
+    .select()
+    .where("Queue.HN", req.body.HN)
+    .where("Queue.statusId", "!=", 4);
+  res.send(data);
+});
+
+router.get("/getCurrentQueue/:roomId",
+ async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .select("queueId")
+    .where("roomId", req.params.roomId)
+    .where("statusId", 3);
+
+  res.send(data);
+});
+
+router.post("/addAppointment", async (req, res) => {
+  var data = await knex
+    .table("Appointment").insert({
+      date: req.body.date,
+      day: req.body.day,
+      month: req.body.month,
+      year: req.body.year,
+      timeStart : req.body.startTime,
+      timeEnd : req.body.endTime,
+      doctorId : req.body.doctorId,
+      HN : req.body.HN
+    })
+    .select();
+
+  res.send(data);
+});
+
 module.exports = router;
 
-// //Get Patient Data 
+// //Get Patient Data
 // router.get("/getPatientData", async (req, res) => {
 //   var data = await knex.table("Queue")
 //   .join("Patient", "Queue.HN", "=", "Patient.HN")
@@ -368,29 +413,3 @@ module.exports = router;
 //   res.send(data);
 // });
 
-//getQueueData
-router.post("/getQueueData", async (req, res) => {
-  console.log(req.body.HN)
-  var data = await knex
-    .table("Queue")
-    .join("Room", "Queue.roomId", "=", "Room.roomId")
-    .join("Department", "Room.departmentId", "=", "Department.departmentId")
-    .join("Patient", "Queue.HN", "=", "Patient.HN")
-    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
-    .join("Status","Queue.statusId","=","Status.statusId")
-    // .join("Appointment","Queue.HN","=","Appointment.HN")
-    .select()
-    .where("Queue.HN",req.body.HN)
-    .where("Queue.statusId", "!=", 4);
-  res.send(data);
-});
-
-router.get("/getCurrentQueue/:roomId", async (req, res) => {
-  var data = await knex
-  .table("Queue")
-  .select("queueId")
-  .where("roomId",req.params.roomId)
-  .where("statusId", 3)
-
-  res.send(data);
-});
