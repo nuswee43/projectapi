@@ -279,14 +279,6 @@ router.get("/getqueuqueue", async (req, res) => {
 });
 
 router.post("/updateQueue", async (req, res) => {
-  var data = await knex
-    .table("Queue")
-    .where("HN", req.body.HN)
-    .update({
-      statusId: 3
-    });
-  res.send("data");
-
   if (req.body.previousHN !== "") {
     await knex
       .table("Queue")
@@ -295,6 +287,14 @@ router.post("/updateQueue", async (req, res) => {
         statusId: 4
       });
   }
+
+  var data = await knex
+    .table("Queue")
+    .where("HN", req.body.HN)
+    .update({
+      statusId: 3
+    });
+  res.send("data");
 });
 //
 router.post("/updateCurrentLabQueue", async (req, res) => {
@@ -375,8 +375,7 @@ router.post("/getQueueData", async (req, res) => {
   res.send(data);
 });
 
-router.get("/getCurrentQueue/:roomId",
- async (req, res) => {
+router.get("/getCurrentQueue/:roomId", async (req, res) => {
   var data = await knex
     .table("Queue")
     .select("queueId")
@@ -388,28 +387,61 @@ router.get("/getCurrentQueue/:roomId",
 
 router.post("/addAppointment", async (req, res) => {
   var data = await knex
-    .table("Appointment").insert({
+    .table("Appointment")
+    .insert({
       date: req.body.date,
       day: req.body.day,
       month: req.body.month,
       year: req.body.year,
-      timeStart : req.body.startTime,
-      timeEnd : req.body.endTime,
-      doctorId : req.body.doctorId,
-      HN : req.body.HN
+      timeStart: req.body.startTime,
+      timeEnd: req.body.endTime,
+      doctorId: req.body.doctorId,
+      HN: req.body.HN
     })
     .select();
 
   res.send(data);
 });
 
+router.get("/getAppointment", async (req, res) => {
+  var data = await knex.table("Appointment").select();
+
+  res.send(data);
+});
+
+router.get("/updateAllPerDay", async (req, res) => {
+  listQueue = await knex
+    .table("Timetable")
+    .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
+    .select("Timetable.doctorId")
+    .where("Timetable.doctorId",1001)
+    .where()
+    res.send(listQueue);
+});
+
+
+
+
+// GET updateAllPerDay (ทำแบบสรุปเป็นวันจะทำให้ไม่เสีย performance ในการคิวรี่ DB )
+//method time ของหมอ - คิด avg time ของหมด แล้วก็ del q ทั้งหมด
+//
+//คิวรี่ empId มาทั้งหมดจาก timetable ที่เข้าวันนี้  = [] where ว่าหมอคนนั้นมีกี่คิว ,
+// (ใช้ for loop)
+//ใน for loop - สร้างตัวแปรนึงขึ้นมาเพื่อเก็บคิวของหมอคนนั้น เอาไป where empId = data[i] , status = 4
+//จะได้เวลาที่เป็น array มา มาใช้ใน for loop อีกรอบ
+//let tmp1 = new Date(listQueue[j]).getMinute()
+//let tmp2 = new Date(listQueue[j+1]).getMinute()
+//let sumMinuts = 0
+//sumMinuts += tmp2 - tmp1
+//สร้างตัวแปร let sumMinuts นอก loop j
+// ออกนอก loop j
+//var let avgMinute  = sumMinute / listQueue.length
+//แล้วอัพเดท . update() where empId = ? update avgTime ให้้กับหมอคนที่ where
+//เปลี่ยนจาก update date ตอน add มาเป็น add date ตอน call (date เป็น null ได้)
+
+//method clear q
+
+//สร้าง part get หมอ รับ empId แล้วใน showPatient ก็ ดึง path นี้ไป
+//ฝั่ง user ใช้ คิวที่รอ * กับ avgTime ได้เลย
+
 module.exports = router;
-
-// //Get Patient Data
-// router.get("/getPatientData", async (req, res) => {
-//   var data = await knex.table("Queue")
-//   .join("Patient", "Queue.HN", "=", "Patient.HN")
-//   .select();
-//   res.send(data);
-// });
-
