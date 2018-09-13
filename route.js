@@ -1,4 +1,10 @@
-var moment = require("moment");
+
+// var moment = require("moment");
+var Moment = require('moment');
+var MomentRange = require('moment-range');
+var moment = MomentRange.extendMoment(Moment);
+const momentTz = require('moment-timezone')
+require('twix');
 const express = require("express");
 var router = express.Router();
 var knex = require("knex")({
@@ -7,9 +13,12 @@ var knex = require("knex")({
     host: "128.199.98.237",
     user: "test",
     password: "test",
-    database: "PatientQueue"
-  }
+    database: "PatientQueue",
+    // timezone: "GMT+0700"
+  },
+
 });
+
 router.get("/getPatient", async (req, res) => {
   var data = await knex.table("Patient").select();
   res.send(data);
@@ -279,24 +288,28 @@ router.get("/getqueuqueue", async (req, res) => {
 });
 
 router.post("/updateQueue", async (req, res) => {
+  console.log(req.body.Date)
   if (req.body.previousHN !== "") {
     await knex
       .table("Queue")
       .where("HN", req.body.previousHN)
       .update({
-        statusId: 4
+        statusId: 4,
+        date: new Date(momentTz().tz(req.body.Date , "Asia/Bangkok").format()),
       });
+      
   }
 
   var data = await knex
     .table("Queue")
     .where("HN", req.body.HN)
     .update({
-      statusId: 3
+      statusId: 3,
+      date: new Date(momentTz().tz(req.body.Date , "Asia/Bangkok").format())
     });
   res.send("data");
 });
-//
+//new Date(momentTz().tz((req.body.Date , "Asia/Bangkok").format()))
 router.post("/updateCurrentLabQueue", async (req, res) => {
   console.log(req.body.HN);
   var data = await knex
@@ -399,7 +412,6 @@ router.post("/addAppointment", async (req, res) => {
       HN: req.body.HN
     })
     .select();
-
   res.send(data);
 });
 
@@ -410,13 +422,93 @@ router.get("/getAppointment", async (req, res) => {
 });
 
 router.get("/updateAllPerDay", async (req, res) => {
-  listQueue = await knex
+  //new Date(momentTz().tz(req.body.Date , "Asia/Bangkok").format())
+  var getDate = new Date(momentTz.tz(new Date(),"Asia/Bangkok").format())
+
+  
+  var month = new Array(
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec"
+  );
+  var day = new Array(7);
+  day[0] = "sun";
+  day[1] = "mon";
+  day[2] = "tue";
+  day[3] = "wed";
+  day[4] = "thu";
+  day[5] = "fri";
+  day[6] = "sat";
+
+  var curr_date = getDate.getDay();
+  var curr_month = getDate.getMonth();
+  var curr_year = getDate.getFullYear();
+  listEmpId = await knex
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select("Timetable.doctorId")
-    .where("Timetable.doctorId",1001)
-    .where()
-    res.send(listQueue);
+    .where("day", day[curr_date])
+    .whereIn("month", month[curr_month])
+    .whereIn("year", curr_year)
+
+  diff_minutes = (tmp2, tmp1) => {
+    var diff = (tmp2.getTime() - tmp1.getTime()) / 1000
+    diff /= 60;
+    return Math.abs(Math.round(diff))
+  }
+  for (let i = 0; i < listEmpId.length; i++) {
+    console.log("listEmpId " + listEmpId.length)
+    
+    let range = 0
+    let sumRange = 0 
+    dateQueue = await knex
+      .table("Queue")
+      .select("date")
+      .where("doctorId", listEmpId[i].doctorId)
+      .where("statusId", 4)
+    console.log("for แรก")
+
+    if (dateQueue.length != 0) {
+      console.log("เข้า if")
+      console.log("dateQueue " + dateQueue.length)
+      for (let j = 0; j < dateQueue.length; j++) {
+        let tmp1 = new Date(dateQueue[j].date)
+        console.log("tmp1: " + tmp1)
+        if (dateQueue.length - 1 == j) {
+          range = range + 0
+        } else {
+          let tmp2 = new Date(dateQueue[j + 1].date)
+          console.log("tmp2: " + tmp2)
+          range = diff_minutes(tmp2, tmp1)
+          console.log("for สอง")
+          console.log(range)
+          sumRange += range
+          console.log("sumRange"+sumRange)
+        }
+      }
+      var avgMinutes = sumRange / dateQueue.length
+      console.log("dateQueue" + dateQueue.length)
+      console.log("avgMinutes" + avgMinutes)
+      updateAvgTime = await knex
+        .table("Doctor")
+        .where("empId", listEmpId[i].doctorId)
+        .update({
+          avgtime: avgMinutes
+        });
+        
+      console.log("เข้า db update")
+      break;
+    }
+  }
 });
 
 
@@ -437,7 +529,7 @@ router.get("/updateAllPerDay", async (req, res) => {
 // ออกนอก loop j
 //var let avgMinute  = sumMinute / listQueue.length
 //แล้วอัพเดท . update() where empId = ? update avgTime ให้้กับหมอคนที่ where
-//เปลี่ยนจาก update date ตอน add มาเป็น add date ตอน call (date เป็น null ได้)
+//เปลี่ยนจาก update date ตอน add มาเป็น add date ตอน call (date เป็น null ได้)  xxxxxx
 
 //method clear q
 
