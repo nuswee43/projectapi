@@ -1,5 +1,3 @@
-
-// var moment = require("moment");
 var Moment = require('moment');
 var MomentRange = require('moment-range');
 var moment = MomentRange.extendMoment(Moment);
@@ -19,11 +17,13 @@ var knex = require("knex")({
 
 });
 
+//Check Patient Data in Adminhome.js 
 router.get("/getPatient", async (req, res) => {
   var data = await knex.table("Patient").select();
   res.send(data);
 });
 
+//Never use
 router.get("/getMax", async (req, res) => {
   var maxHN = await knex
     .table("Queue")
@@ -34,6 +34,7 @@ router.get("/getMax", async (req, res) => {
   res.send("EIEI");
 });
 
+//Update Queue in Adminhome.js (Addqueue Function)
 router.post("/addPatientQ", async (req, res) => {
   var maxHN = await knex
     .table("Queue")
@@ -46,37 +47,19 @@ router.post("/addPatientQ", async (req, res) => {
   res.send("EIEI");
   await knex.table("Queue").insert({
     queueId: maxHN[0].maxQueueId + 1,
-    roomId: req.body.roomId, //เปลียน
+    roomId: req.body.roomId,
     Date: req.body.date,
     statusId: req.body.statusId,
     HN: req.body.HN,
-    doctorId: req.body.doctorId, //เปลียน
+    doctorId: req.body.doctorId,
     forward: req.body.forward,
     nurseId: req.body.nurseId
   });
   res.send("Success");
-  // var checkTime = await knex.table('Timetable')
-  //     .join('Doctor', 'Timetable.doctorId', '=', 'Doctor.empId')
 
-  //     //join doctor get deperment แล้วเอา department id มา where
-  //     .where({
-  //         day: req.body.day,
-  //         month: req.body.month,
-  //         year: req.body.year,
-  //         departmentId: req.body.departmentId
-  //     })
-
-  //     .select()
-  // var checkRangeTime = checkTime.filter(check => {
-  //     isAfter = moment().isAfter(moment(check.timeStart, 'HH:mm:ss'))
-  //     isBefore = moment().isBefore(moment(check.timeEnd, 'HH:mm:ss'))
-
-  //     // (check.timeStart >= req.body.timeFormat) && (check.timeEnd <= req.body.timeFormat)
-  //     return isAfter && isBefore
-  // })
-  // console.log(checkRangeTime)
 });
-//Check HN IN Department
+
+//Check HN IN Department ว่าอยู๋ในแผนกไหน Adminhome.js (Addqueue Function)
 router.get("/checkHNatDepartment/:id", async (req, res) => {
   var data = await knex
     .table("Queue")
@@ -88,7 +71,7 @@ router.get("/checkHNatDepartment/:id", async (req, res) => {
   res.send(data);
 });
 
-//get all department
+//get all department in Adminhome.js (Forward function)
 router.get("/getDepartment", async (req, res) => {
   var data = await knex
     .table("Department")
@@ -96,13 +79,7 @@ router.get("/getDepartment", async (req, res) => {
     .where("type", 1);
   res.send(data);
 });
-//get all room
-// router.get('/getDepartment', async (req, res) => {
-//     var data = await knex.table('Room')
-//         .select()
-//     res.send(data);
-// })
-
+//get all Lab in Adminhome.js (Forward function)
 router.get("/getLab", async (req, res) => {
   var data = await knex
     .table("Department")
@@ -111,6 +88,7 @@ router.get("/getLab", async (req, res) => {
   res.send(data);
 });
 
+//Not sure
 router.get("/getDepartment/:id", async (req, res) => {
   var data = await knex
     .table("Department")
@@ -119,16 +97,7 @@ router.get("/getDepartment/:id", async (req, res) => {
 
   res.send(data);
 });
-//check room with department
-// router.get('/roomsWithDoctos/:id', async (req, res) => {
-//     var data = await knex.table('Timetable')
-//         .join('Doctor', 'Timetable.doctorId', '=', 'Doctor.empId')
-//         .select()
-//         .where('departmentId', req.params.id)
-
-//     res.send(data);
-// })
-
+//Never use
 router.get("/getRoom/:id", async (req, res) => {
   var data = await knex
     .table("Room")
@@ -137,11 +106,12 @@ router.get("/getRoom/:id", async (req, res) => {
   res.send(data);
 });
 
+//Never use
 router.get("/getTheRoom", async (req, res) => {
   var data = await knex.table("Room").select();
   res.send(data);
 });
-//doctor
+//Never use
 router.get("/getDoctor/:id", async (req, res) => {
   var data = await knex
     .table("Timetable")
@@ -149,14 +119,14 @@ router.get("/getDoctor/:id", async (req, res) => {
     .where("roomId", req.params.id);
   res.send(data);
 });
-
+//Never use
 router.get("/doctorTime", async (req, res) => {
   var data = await knex.table("Doctor").select();
 
   res.send(data);
 });
 
-//
+//check Doctor in room at Adminhome.js 
 router.get("/currentQwithDoctor/:id", async (req, res) => {
   var data = await knex
     .table("Queue")
@@ -166,7 +136,7 @@ router.get("/currentQwithDoctor/:id", async (req, res) => {
     .where("doctorId", req.params.id);
   res.send(data);
 });
-
+//get list doctor 
 router.post("/getListDoctor", async (req, res) => {
   var data = await knex
     .table("Timetable")
@@ -193,7 +163,7 @@ router.post("/getRoomAndDoctor", async (req, res) => {
   res.send(data);
   console.log(data);
 });
-
+//never use
 router.delete("/deletePatientQ", async (req, res) => {
   var data = await knex
     .table("Queue")
@@ -203,7 +173,7 @@ router.delete("/deletePatientQ", async (req, res) => {
     .delete();
   res.end("success");
 });
-
+//never use
 router.post("/checkHN", async (req, res) => {
   var data = await knex
     .table("Patient")
@@ -214,7 +184,7 @@ router.post("/checkHN", async (req, res) => {
     });
   res.send(data);
 });
-
+//use for check username with nurse at Admin.js
 router.post("/checkUsername", async (req, res) => {
   var data = await knex
     .table("Nurse")
@@ -226,7 +196,7 @@ router.post("/checkUsername", async (req, res) => {
     });
   res.send(data);
 });
-
+//never use
 router.post("/getHN", async (req, res) => {
   var data = await knex
     .table("Patient")
@@ -234,13 +204,13 @@ router.post("/getHN", async (req, res) => {
     .where("HN", req.body.HN);
   res.send(data);
 });
-
+//never use
 router.get("/getNurse", async (req, res) => {
   var data = await knex.table("Nurse").select();
   res.send(data);
 });
 
-//queues
+//queues show queue in Adminhome.js
 router.get("/getQueue", async (req, res) => {
   var data = await knex
     .table("Queue")
@@ -281,12 +251,13 @@ router.get("/getListLabQueue", async (req, res) => {
   res.send(data);
 });
 //----------------------
+//Neveruse
 router.get("/getqueuqueue", async (req, res) => {
   var data = await knex.table("Queue").select();
 
   res.send(data);
 });
-
+//Call function Adminhome.js
 router.post("/updateQueue", async (req, res) => {
   console.log(req.body.Date)
   if (req.body.previousHN !== "") {
@@ -295,21 +266,21 @@ router.post("/updateQueue", async (req, res) => {
       .where("HN", req.body.previousHN)
       .update({
         statusId: 4,
-        date: new Date(momentTz().tz(req.body.Date , "Asia/Bangkok").format()),
+        date: new Date(momentTz().tz(req.body.Date, "Asia/Bangkok").format()),
       });
-      
-  }
 
+  }
   var data = await knex
     .table("Queue")
     .where("HN", req.body.HN)
     .update({
       statusId: 3,
-      date: new Date(momentTz().tz(req.body.Date , "Asia/Bangkok").format())
+      date: new Date(momentTz().tz(req.body.Date, "Asia/Bangkok").format())
     });
   res.send("data");
 });
-//new Date(momentTz().tz((req.body.Date , "Asia/Bangkok").format()))
+
+
 router.post("/updateCurrentLabQueue", async (req, res) => {
   console.log(req.body.HN);
   var data = await knex
@@ -354,13 +325,14 @@ router.post("/updateForwardQueue", async (req, res) => {
   res.send("data");
 });
 
+//never use
 router.get("/getDate", async (req, res) => {
   var data = await knex.table("Timetable").select("timeStart", "timeEnd");
 
   res.send(data);
 });
 
-//forward to another department
+//forward to another department (Forard Function)
 router.post("/updateForward", async (req, res) => {
   var data = await knex
     .table("Queue")
@@ -416,16 +388,20 @@ router.post("/addAppointment", async (req, res) => {
 });
 
 router.get("/getAppointment", async (req, res) => {
-  var data = await knex.table("Appointment").select();
+  var data = await knex
+    .table("Appointment")
+    .join("Patient", "Appointment.HN", "=", "Patient.HN")
+    .join("Doctor", "Appointment.doctorId", "=", "Doctor.empId")
+    .select();
 
   res.send(data);
 });
 
 router.get("/updateAllPerDay", async (req, res) => {
-  //new Date(momentTz().tz(req.body.Date , "Asia/Bangkok").format())
-  var getDate = new Date(momentTz.tz(new Date(),"Asia/Bangkok").format())
-
   
+  var getDate = new Date(momentTz.tz(new Date(), "Asia/Bangkok").format())
+
+
   var month = new Array(
     "jan",
     "feb",
@@ -467,9 +443,9 @@ router.get("/updateAllPerDay", async (req, res) => {
   }
   for (let i = 0; i < listEmpId.length; i++) {
     console.log("listEmpId " + listEmpId.length)
-    
+
     let range = 0
-    let sumRange = 0 
+    let sumRange = 0
     dateQueue = await knex
       .table("Queue")
       .select("date")
@@ -492,7 +468,7 @@ router.get("/updateAllPerDay", async (req, res) => {
           console.log("for สอง")
           console.log(range)
           sumRange += range
-          console.log("sumRange"+sumRange)
+          console.log("sumRange" + sumRange)
         }
       }
       var avgMinutes = sumRange / dateQueue.length
@@ -504,14 +480,29 @@ router.get("/updateAllPerDay", async (req, res) => {
         .update({
           avgtime: avgMinutes
         });
-        
+
       console.log("เข้า db update")
       break;
     }
   }
 });
 
+router.post("/updateAppointment", async (req, res) => {
+  var data = await knex
+    .table("Appointment")
+    .update({
+      date: req.body.date,
+      day: req.body.day,
+      month: req.body.month,
+      year: req.body.year,
+      timeStart: req.body.timeStart,
+      timeEnd: req.body.timeEnd,
 
+    })
+    .where("appointmentId", req.body.appointmentId)
+    .select();
+  res.send(data);
+});
 
 
 // GET updateAllPerDay (ทำแบบสรุปเป็นวันจะทำให้ไม่เสีย performance ในการคิวรี่ DB )
