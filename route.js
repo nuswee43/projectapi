@@ -39,13 +39,22 @@ router.post("/addPatientQ", async (req, res) => {
   console.log(req.body)
   var maxHN = await knex
     .table("Queue")
-    // .join('Room','Queue.roomId','=','Room.roomid')
     .select()
     .where("roomId", req.body.roomId)
-    // .andwhere('departmentId', req.body.departId)
     .max("queueId as maxQueueId");
+
+  let groupId = 0
   console.log(maxHN[0].maxQueueId);
-  res.send("EIEI");
+  if (req.body.queueDefault === 'queueDefault') {
+    let tmp = await knex
+      .table("Queue")
+      .select()
+      .max("group as maxGroupId");
+    groupId = tmp[0].maxGroupId + 1
+  } else {
+    groupId = req.body.groupId
+  }
+  console.log('groupid ', groupId)
   await knex.table("Queue").insert({
     queueId: maxHN[0].maxQueueId + 1,
     roomId: req.body.roomId,
@@ -54,7 +63,9 @@ router.post("/addPatientQ", async (req, res) => {
     HN: req.body.HN,
     doctorId: req.body.doctorId,
     forward: req.body.forward,
-    nurseId: req.body.nurseId
+    nurseId: req.body.nurseId,
+    group: groupId,
+    roomBack: req.body.roomBack
   });
   res.send("Success");
 
@@ -133,7 +144,7 @@ router.get("/currentQwithDoctor/:id", async (req, res) => {
     .table("Queue")
     .join("Patient", "Queue.HN", "=", "Patient.HN")
     .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
-    .join("Room","Queue.roomId","=","Room.roomId")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
     .join("Department", "Room.departmentId", "=", "Department.departmentId")
     .where("statusId", 3)
     .where("doctorId", req.params.id);
@@ -225,7 +236,7 @@ router.get("/getQueue/:roomId", async (req, res) => {
     .select()
     .where("Queue.statusId", 1)
     .where("Queue.roomId", req.params.roomId);
-    console.log(data)
+  console.log(data)
   res.send(data);
 });
 
@@ -238,7 +249,9 @@ router.get("/getLabQueue/:roomId", async (req, res) => {
     .join("Patient", "Queue.HN", "=", "Patient.HN")
     .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
     .select()
-    .where("statusId", 2)
+    .where("statusId", 1)
+    //test
+    .where("Department.type", 2)
     .where("Room.roomId", req.params.roomId);
   res.send(data);
 });
@@ -387,7 +400,8 @@ router.post("/addAppointment", async (req, res) => {
       timeStart: req.body.startTime,
       timeEnd: req.body.endTime,
       doctorId: req.body.doctorId,
-      HN: req.body.HN
+      HN: req.body.HN,
+      // roomId : req.body.roomId
     })
     .select();
   res.send(data);
@@ -398,6 +412,8 @@ router.get("/getAppointment", async (req, res) => {
     .table("Appointment")
     .join("Patient", "Appointment.HN", "=", "Patient.HN")
     .join("Doctor", "Appointment.doctorId", "=", "Doctor.empId")
+    .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
+    // .join("Room","Doctor.departmentId","=","Room.departmentId")
     .select();
 
   res.send(data);
@@ -448,7 +464,7 @@ router.get("/updateAllPerDay", async (req, res) => {
     return Math.abs(Math.round(diff))
   }
   for (let i = 0; i < listEmpId.length; i++) {
-    console.log("listEmpId " + listEmpId.length)
+    // console.log("listEmpId " + listEmpId.length)
 
     let range = 0
     let sumRange = 0
@@ -457,29 +473,29 @@ router.get("/updateAllPerDay", async (req, res) => {
       .select("date")
       .where("doctorId", listEmpId[i].doctorId)
       .where("statusId", 4)
-    console.log("for แรก")
+    // console.log("for แรก")
 
     if (dateQueue.length != 0) {
-      console.log("เข้า if")
-      console.log("dateQueue " + dateQueue.length)
+      // console.log("เข้า if")
+      // console.log("dateQueue " + dateQueue.length)
       for (let j = 0; j < dateQueue.length; j++) {
         let tmp1 = new Date(dateQueue[j].date)
-        console.log("tmp1: " + tmp1)
+        // console.log("tmp1: " + tmp1)
         if (dateQueue.length - 1 == j) {
           range = range + 0
         } else {
           let tmp2 = new Date(dateQueue[j + 1].date)
-          console.log("tmp2: " + tmp2)
+          // console.log("tmp2: " + tmp2)
           range = diff_minutes(tmp2, tmp1)
-          console.log("for สอง")
-          console.log(range)
+          // console.log("for สอง")
+          // console.log(range)
           sumRange += range
-          console.log("sumRange" + sumRange)
+          // console.log("sumRange" + sumRange)
         }
       }
       var avgMinutes = sumRange / dateQueue.length
-      console.log("dateQueue" + dateQueue.length)
-      console.log("avgMinutes" + avgMinutes)
+      // console.log("dateQueue" + dateQueue.length)
+      // console.log("avgMinutes" + avgMinutes)
       updateAvgTime = await knex
         .table("Doctor")
         .where("empId", listEmpId[i].doctorId)
@@ -487,7 +503,7 @@ router.get("/updateAllPerDay", async (req, res) => {
           avgtime: avgMinutes
         });
 
-      console.log("เข้า db update")
+      // console.log("เข้า db update")
       break;
     }
   }
@@ -526,24 +542,48 @@ router.post("/updateAppointment", async (req, res) => {
 
 
 
+//check Group
+router.post("/checkGroupId", async (req, res) => {
+  console.log('group ', req.body.group)
+  var data = await knex
+    .table("Queue")
+    .where("group", req.body.group)
+    .where("statusId", 5)
+    .select()
+    .orderBy('runningNumber', 'asc')
+  // res.send("check Success")
+  res.send(data)
+});
+
+//checkGroup for Roomback 
+router.post("/checkGroupRoomback", async (req, res) => {
+  console.log('group ', req.body.group)
+  var data = await knex
+    .table("Queue")
+    .where("group", req.body.group)
+    .where("statusId", 4)
+    // .where("roomId",req.body.roomId)
+    .select()
+    .orderBy('runningNumber', 'asc')
+  // res.send("check Success")
+  res.send(data)
+});
 
 
 
-
-
-
-//Call function Adminhome.js
+//Call function Adminhome.js and forwward
 ///// NEW //////////////////////////////
 router.post("/updateQueue", async (req, res) => {
-  console.log(req.body.date)
   await knex
-      .table("Queue")
-      .where("HN", req.body.HN)
-      // .where("statusId",1)
-      .update({
-        statusId: req.body.statusId,
-        date: new Date(momentTz().tz(req.body.date, "Asia/Bangkok").format()),
-      });
+    .table("Queue")
+    .where("HN", req.body.HN)
+    .where("queueId", req.body.queueId)
+    .where("runningNumber", req.body.runningNumber)
+    // .where("statusId",1)
+    .update({
+      statusId: req.body.statusId,
+      date: new Date(momentTz().tz(req.body.date, "Asia/Bangkok").format()),
+    });
   res.send("UPDATE SUCCESS");
 });
 
