@@ -406,7 +406,7 @@ router.post("/addAppointment", async (req, res) => {
     .select();
   res.send(data);
 });
-
+//use with calendar 
 router.get("/getAppointment", async (req, res) => {
   var data = await knex
     .table("Appointment")
@@ -585,6 +585,38 @@ router.post("/updateQueue", async (req, res) => {
       date: new Date(momentTz().tz(req.body.date, "Asia/Bangkok").format()),
     });
   res.send("UPDATE SUCCESS");
+});
+
+///user step at user page 
+
+router.post("/getAllStepQueue", async (req, res) => {
+  console.log(req.body.HN);
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .join("Status", "Queue.statusId", "=", "Status.statusId")
+    // .join("Appointment","Queue.HN","=","Appointment.HN")
+    .select()
+    .where("Queue.HN", req.body.HN)
+    .where("Queue.group", req.body.group)
+    .orderBy('runningNumber', 'asc')
+    
+  res.send(data);
+});
+///
+router.post("/getAllAppointment", async (req, res) => {
+  var data = await knex
+    .table("Appointment")
+    .join("Patient", "Appointment.HN", "=", "Patient.HN")
+    .join("Doctor", "Appointment.doctorId", "=", "Doctor.empId")
+    .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
+    // .join("Room","Department.departmentId","=","Room.departmentId")
+    .select()
+    .where("Appointment.HN",req.body.HN)
+  res.send(data);
 });
 
 module.exports = router;
