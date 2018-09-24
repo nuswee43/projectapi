@@ -619,4 +619,26 @@ router.post("/getAllAppointment", async (req, res) => {
   res.send(data);
 });
 
+const http = require('http');
+
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
+const accountSid = 'ACd6b78055eb3dbbebbb32eafe7f6d275e'
+const authToken = '45179b9b7d88c4989d13a81c82f16d91'
+const client = require('twilio')(accountSid, authToken);
+
+router.post('/sendText', (req, res) => {
+
+  const recipient = req.body.recipient
+  const textmessage = req.body.textmessage
+
+
+  client.messages.create({
+    body: textmessage,
+    from: '+18647540772',
+    to: recipient
+  }).then(message => console.log(message.sid))
+    .done();
+
+})
+
 module.exports = router;
