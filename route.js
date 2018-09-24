@@ -249,10 +249,10 @@ router.get("/getLabQueue/:roomId", async (req, res) => {
     .join("Patient", "Queue.HN", "=", "Patient.HN")
     .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
     .select()
-    .where("statusId", 1)
+    .where("Queue.roomBack", req.params.roomId)
     //test
-    .where("Department.type", 2)
-    .where("Room.roomId", req.params.roomId);
+    // .where("Department.type", 2)
+    // .where("Room.roomId", req.params.roomId);
   res.send(data);
 });
 //----------------------
