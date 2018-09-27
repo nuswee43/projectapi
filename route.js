@@ -407,13 +407,14 @@ router.post("/addAppointment", async (req, res) => {
   res.send(data);
 });
 //use with calendar 
-router.get("/getAppointment", async (req, res) => {
+router.get("/getAppointment/:id", async (req, res) => {
   var data = await knex
     .table("Appointment")
     .join("Patient", "Appointment.HN", "=", "Patient.HN")
     .join("Doctor", "Appointment.doctorId", "=", "Doctor.empId")
     .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
     // .join("Room","Doctor.departmentId","=","Room.departmentId")
+    .where('Department.departmentId',req.params.id)
     .select();
 
   res.send(data);
@@ -485,10 +486,10 @@ router.get("/updateAllPerDay", async (req, res) => {
           range = range + 0
         } else {
           let tmp2 = new Date(dateQueue[j + 1].date)
-          // console.log("tmp2: " + tmp2)
+          console.log("tmp2: " + tmp2)
           range = diff_minutes(tmp2, tmp1)
           // console.log("for สอง")
-          // console.log(range)
+          // console.log('range ',range)
           sumRange += range
           // console.log("sumRange" + sumRange)
         }
@@ -618,27 +619,5 @@ router.post("/getAllAppointment", async (req, res) => {
     .where("Appointment.HN",req.body.HN)
   res.send(data);
 });
-
-const http = require('http');
-
-const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const accountSid = 'ACd6b78055eb3dbbebbb32eafe7f6d275e'
-const authToken = '45179b9b7d88c4989d13a81c82f16d91'
-const client = require('twilio')(accountSid, authToken);
-
-router.post('/sendText', (req, res) => {
-
-  const recipient = req.body.recipient
-  const textmessage = req.body.textmessage
-
-
-  client.messages.create({
-    body: textmessage,
-    from: '+18647540772',
-    to: recipient
-  }).then(message => console.log(message.sid))
-    .done();
-
-})
 
 module.exports = router;
