@@ -249,10 +249,10 @@ router.get("/getLabQueue/:roomId", async (req, res) => {
     .join("Patient", "Queue.HN", "=", "Patient.HN")
     .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
     .select()
-    .where("statusId", 1)
+    .where("Queue.roomBack", req.params.roomId)
     //test
-    .where("Department.type", 2)
-    .where("Room.roomId", req.params.roomId);
+    // .where("Department.type", 2)
+    // .where("Room.roomId", req.params.roomId);
   res.send(data);
 });
 //----------------------
@@ -407,13 +407,14 @@ router.post("/addAppointment", async (req, res) => {
   res.send(data);
 });
 //use with calendar 
-router.get("/getAppointment", async (req, res) => {
+router.get("/getAppointment/:id", async (req, res) => {
   var data = await knex
     .table("Appointment")
     .join("Patient", "Appointment.HN", "=", "Patient.HN")
     .join("Doctor", "Appointment.doctorId", "=", "Doctor.empId")
     .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
     // .join("Room","Doctor.departmentId","=","Room.departmentId")
+    .where('Department.departmentId',req.params.id)
     .select();
 
   res.send(data);
@@ -485,10 +486,10 @@ router.get("/updateAllPerDay", async (req, res) => {
           range = range + 0
         } else {
           let tmp2 = new Date(dateQueue[j + 1].date)
-          // console.log("tmp2: " + tmp2)
+          console.log("tmp2: " + tmp2)
           range = diff_minutes(tmp2, tmp1)
           // console.log("for สอง")
-          // console.log(range)
+          // console.log('range ',range)
           sumRange += range
           // console.log("sumRange" + sumRange)
         }
@@ -526,15 +527,14 @@ router.post("/updateAppointment", async (req, res) => {
   res.send(data);
 });
 
-// router.delete("/deleteAppointment", async (req, res) => {
-//   console.log(req.body.appointmentId)
-//   var data = await knex
-//     .table("Appointment")
-//     .where("appointmentId", req.body.appointmentId)
-//     .del()
+router.delete("/deleteAppointment/:id", async (req, res) => {
+  await knex
+    .table("Appointment")
+    .where("appointmentId",'=', req.params.id)
+    .del()
 
-//   res.send(data);
-// });
+  res.send('success');
+});
 
 
 
@@ -637,13 +637,6 @@ router.post('/sendText', (req, res) => {
     .done();
 
 })
-
-// router.get("/getPhoneNumber", async (req, res) => {
-//   const data = await knex
-//     .table("Patient")
-//     .select("phonenumber")
-//   res.send(data);
-// })
 
 router.post("/getPhoneNumber", async(req, res)=>{
   var data = await knex
