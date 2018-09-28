@@ -527,15 +527,14 @@ router.post("/updateAppointment", async (req, res) => {
   res.send(data);
 });
 
-// router.delete("/deleteAppointment", async (req, res) => {
-//   console.log(req.body.appointmentId)
-//   var data = await knex
-//     .table("Appointment")
-//     .where("appointmentId", req.body.appointmentId)
-//     .del()
+router.delete("/deleteAppointment/:id", async (req, res) => {
+  await knex
+    .table("Appointment")
+    .where("appointmentId",'=', req.params.id)
+    .del()
 
-//   res.send(data);
-// });
+  res.send('success');
+});
 
 
 
