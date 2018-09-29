@@ -251,8 +251,8 @@ router.get("/getLabQueue/:roomId", async (req, res) => {
     .select()
     .where("Queue.roomBack", req.params.roomId)
     //test
-    // .where("Department.type", 2)
-    // .where("Room.roomId", req.params.roomId);
+    // .where("Queue.statusId", "!=", 1)
+  // .where("Room.roomId", req.params.roomId);
   res.send(data);
 });
 //----------------------
@@ -414,7 +414,7 @@ router.get("/getAppointment/:id", async (req, res) => {
     .join("Doctor", "Appointment.doctorId", "=", "Doctor.empId")
     .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
     // .join("Room","Doctor.departmentId","=","Room.departmentId")
-    .where('Department.departmentId',req.params.id)
+    .where('Department.departmentId', req.params.id)
     .select();
 
   res.send(data);
@@ -423,8 +423,6 @@ router.get("/getAppointment/:id", async (req, res) => {
 router.get("/updateAllPerDay", async (req, res) => {
 
   var getDate = new Date(momentTz.tz(new Date(), "Asia/Bangkok").format())
-
-
   var month = new Array(
     "jan",
     "feb",
@@ -465,8 +463,6 @@ router.get("/updateAllPerDay", async (req, res) => {
     return Math.abs(Math.round(diff))
   }
   for (let i = 0; i < listEmpId.length; i++) {
-    // console.log("listEmpId " + listEmpId.length)
-
     let range = 0
     let sumRange = 0
     dateQueue = await knex
@@ -474,37 +470,26 @@ router.get("/updateAllPerDay", async (req, res) => {
       .select("date")
       .where("doctorId", listEmpId[i].doctorId)
       .where("statusId", 4)
-    // console.log("for แรก")
-
     if (dateQueue.length != 0) {
-      // console.log("เข้า if")
-      // console.log("dateQueue " + dateQueue.length)
       for (let j = 0; j < dateQueue.length; j++) {
         let tmp1 = new Date(dateQueue[j].date)
-        // console.log("tmp1: " + tmp1)
         if (dateQueue.length - 1 == j) {
           range = range + 0
         } else {
           let tmp2 = new Date(dateQueue[j + 1].date)
           console.log("tmp2: " + tmp2)
           range = diff_minutes(tmp2, tmp1)
-          // console.log("for สอง")
-          // console.log('range ',range)
+
           sumRange += range
-          // console.log("sumRange" + sumRange)
         }
       }
       var avgMinutes = sumRange / dateQueue.length
-      // console.log("dateQueue" + dateQueue.length)
-      // console.log("avgMinutes" + avgMinutes)
       updateAvgTime = await knex
         .table("Doctor")
         .where("empId", listEmpId[i].doctorId)
         .update({
           avgtime: avgMinutes
         });
-
-      // console.log("เข้า db update")
       break;
     }
   }
@@ -530,7 +515,7 @@ router.post("/updateAppointment", async (req, res) => {
 router.delete("/deleteAppointment/:id", async (req, res) => {
   await knex
     .table("Appointment")
-    .where("appointmentId",'=', req.params.id)
+    .where("appointmentId", '=', req.params.id)
     .del()
 
   res.send('success');
@@ -603,7 +588,7 @@ router.post("/getAllStepQueue", async (req, res) => {
     .where("Queue.HN", req.body.HN)
     .where("Queue.group", req.body.group)
     .orderBy('runningNumber', 'asc')
-    
+
   res.send(data);
 });
 ///
@@ -615,7 +600,7 @@ router.post("/getAllAppointment", async (req, res) => {
     .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
     // .join("Room","Department.departmentId","=","Room.departmentId")
     .select()
-    .where("Appointment.HN",req.body.HN)
+    .where("Appointment.HN", req.body.HN)
   res.send(data);
 });
 
