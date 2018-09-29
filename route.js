@@ -622,7 +622,7 @@ router.post('/sendText', (req, res) => {
     .done();
 
 })
-
+//Get phone Number to use for otp
 router.post("/getPhoneNumber", async(req, res)=>{
   var data = await knex
   .table("Patient")
