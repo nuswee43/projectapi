@@ -37,7 +37,8 @@ router.get("/getMax", async (req, res) => {
 
 //Update Queue in Adminhome.js (Addqueue Function)
 router.post("/addPatientQ", async (req, res) => {
-  console.log(req.body)
+  console.log("ADD Q!!!")
+  // console.log(req.body)
   var maxHN = await knex
     .table("Queue")
     .select()
@@ -45,7 +46,7 @@ router.post("/addPatientQ", async (req, res) => {
     .max("queueId as maxQueueId");
 
   let groupId = 0
-  console.log(maxHN[0].maxQueueId);
+  // console.log(maxHN[0].maxQueueId);
   if (req.body.queueDefault === 'queueDefault') {
     let tmp = await knex
       .table("Queue")
@@ -55,8 +56,8 @@ router.post("/addPatientQ", async (req, res) => {
   } else {
     groupId = req.body.groupId
   }
-  console.log('groupid ', groupId)
-  console.log('roomId', req.body.roomId)
+  // console.log('groupid ', groupId)
+  // console.log('roomId', req.body.roomId)
   await knex.table("Queue").insert({
     queueId: maxHN[0].maxQueueId + 1,
     roomId: req.body.roomId,
@@ -70,6 +71,7 @@ router.post("/addPatientQ", async (req, res) => {
     roomBack: req.body.roomBack,
     step: req.body.step
   });
+  console.log("ADD Q Success")
   res.send("Success");
 
 });
@@ -191,7 +193,7 @@ router.post("/getRoomAndDoctor", async (req, res) => {
     .whereIn("departmentId", req.body.forwardDepartmentId);
 
   res.send(data);
-  console.log(data);
+  // console.log(data);
 });
 //never use
 router.delete("/deletePatientQ", async (req, res) => {
@@ -493,7 +495,7 @@ router.get("/updateAllPerDay", async (req, res) => {
           range = range + 0
         } else {
           let tmp2 = new Date(dateQueue[j + 1].date)
-          console.log("tmp2: " + tmp2)
+          // console.log("tmp2: " + tmp2)
           range = diff_minutes(tmp2, tmp1)
 
           sumRange += range
@@ -551,7 +553,7 @@ router.post("/checkGroupId", async (req, res) => {
     .where("group", req.body.group)
     .where("statusId", 5)
     .select()
-    .orderBy('runningNumber', 'asc')
+    .orderBy('step', 'asc')
   // res.send("check Success")
   res.send(data)
 });
@@ -565,7 +567,7 @@ router.post("/checkGroupRoomback", async (req, res) => {
     .where("statusId", 4)
     // .where("roomId",req.body.roomId)
     .select()
-    .orderBy('runningNumber', 'asc')
+    .orderBy('step', 'asc')
   // res.send("check Success")
   res.send(data)
 });
@@ -603,7 +605,7 @@ router.post("/getAllStepQueue", async (req, res) => {
     .select()
     .where("Queue.HN", req.body.HN)
     .where("Queue.group", req.body.group)
-    .orderBy('runningNumber', 'asc')
+    .orderBy('step', 'asc')
 
   res.send(data);
 });
@@ -640,19 +642,23 @@ router.post('/sendText', (req, res) => {
 
 router.post("/updateStep", async (req, res) => {
   console.log("!!!!!UPDATE")
-  console.log(req.body)
+  // console.log('body   ', req.body)
   var stepInGroup = await knex
     .table("Queue")
     .select()
     .where("group", req.body.group)
     .orderBy('step', 'asc')
-  console.log('stepstepstep', stepInGroup)
+  console.log('stepstepstep :: length'+ stepInGroup.length ,stepInGroup)
   if (stepInGroup.length > 0) {
     stepInGroup.map(async (data, i) => {
       console.log("----------------------------")
-      console.log('i and index', i, req.body.index)
+      // console.log('i and index', i, req.body.index)
+      // console.log('i + 1', i + 1)
+      // console.log('data + 1', data.step + 1)
+      console.log('stepingroup // '+i, data)
       if (i >= req.body.index) {
-        console.log('stepingroup ', data)
+        console.log("update i",i)
+        // console.log('stepingroup ', data)
         // index = 2 // คนที่จะอัพเดตคือ 3 4 >> 4 5
         // ตัวที่ผ่านเข้ามาคือ 3
         await knex
@@ -662,12 +668,26 @@ router.post("/updateStep", async (req, res) => {
           .update({
             step: data.step + 1
           });
+          console.log("finish")
       }
       console.log("----------------------------")
     })
   }
   res.send('success')
 });
+
+router.post("/updateStepQ", async (req, res) => {
+  console.log('เข้า update step', req.body)
+  var data = await knex
+    .table("Queue")
+    .where("runningNumber", req.body.runningNumber)
+    .update({
+      step: req.body.step,
+    });
+  res.send('success')
+
+})
+
 
 //Get phone Number to use for otp
 router.post("/getPhoneNumber", async (req, res) => {
@@ -679,7 +699,7 @@ router.post("/getPhoneNumber", async (req, res) => {
 })
 
 router.post("/updateStatus", async (req, res) => {
-  console.log('เข้า update statussss',req.body)
+  console.log('เข้า update statussss', req.body)
   var data = await knex
     .table("Queue")
     // .where("HN", req.body.HN)
