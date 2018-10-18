@@ -173,9 +173,10 @@ router.post("/getTimetable", async (req, res) => {
   var data = await knex
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
+    .join("Queue", "Timetable.doctorId", "=", "Queue.doctorId")
     .select()
-    .whereIn("month", req.body.month)
-    .whereIn("departmentId", req.body.departmentId);
+    .where("month", req.body.month)
+    .where("departmentId", req.body.departmentId);
   res.send(data);
   // console.log(data);
 });
@@ -523,22 +524,52 @@ router.post("/updateAppointment", async (req, res) => {
       year: req.body.year,
       timeStart: req.body.timeStart,
       timeEnd: req.body.timeEnd,
-
     })
     .where("appointmentId", req.body.appointmentId)
     .select();
   res.send(data);
 });
 
+router.post("/updateDoctorTimetable", async (req, res) => {
+  var data = await knex
+    .table("Timetable")
+    .update({
+      date: req.body.date,
+      day: req.body.day,
+      month: req.body.month,
+      year: req.body.year,
+      timeStart: req.body.timeStart,
+      timeEnd: req.body.timeEnd,
+    })
+    .where("timetableId", req.body.timetableId)
+    .select();
+  res.send(data);
+});
+
+
 router.delete("/deleteAppointment/:id", async (req, res) => {
   await knex
     .table("Appointment")
     .where("appointmentId", '=', req.params.id)
     .del()
-
   res.send('success');
 });
 
+router.delete("/deleteTimetable/:id", async (req, res) => {
+  await knex
+    .table("Timetable")
+    .where("timetableId", '=', req.params.id)
+    .del()
+  res.send('success');
+});
+
+router.delete("/deleteListQueue/:id", async (req, res) => {
+  await knex
+    .table("Queue")
+    .where("runningNumber", '=', req.params.id)
+    .del()
+  res.send('success');
+});
 
 
 
