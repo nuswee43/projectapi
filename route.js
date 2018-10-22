@@ -157,17 +157,18 @@ router.get("/currentQwithDoctor/:id", async (req, res) => {
 });
 //get list doctor 
 router.post("/getListDoctor", async (req, res) => {
+  console.log(req.body)
   var data = await knex
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
     .where('Date', req.body.Date)
     .where("day", req.body.day)
-    .whereIn("month", req.body.month)
-    .whereIn("year", req.body.year)
-    .whereIn("departmentId", req.body.departmentId);
-  res.send(data);
-  console.log(data);
+    .where("month", req.body.month)
+    .where("Year", req.body.year)
+    .where("departmentId", req.body.departmentId);
+    console.log(data);
+    res.send(data);
 });
 
 // get only doctor 
