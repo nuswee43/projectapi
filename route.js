@@ -161,24 +161,82 @@ router.post("/getListDoctor", async (req, res) => {
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
+    .where('Date', req.body.Date)
     .where("day", req.body.day)
     .whereIn("month", req.body.month)
     .whereIn("year", req.body.year)
     .whereIn("departmentId", req.body.departmentId);
   res.send(data);
+  console.log(data);
+});
+
+// get only doctor 
+router.post("/getDoctors", async (req, res) => {
+  var data = await knex
+    .table("Doctor")
+    .select()
+    .whereIn("departmentId", req.body.departmentId);
+  res.send(data);
+  console.log(data);
+});
+
+
+//getList Romm
+router.post("/getListRoom", async (req, res) => {
+  var data = await knex
+    .table("Room")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .select()
+    .whereIn("Room.departmentId", req.body.departmentId);
+  res.send(data);
   // console.log(data);
 });
+
 //get Timetable 
 router.post("/getTimetable", async (req, res) => {
   var data = await knex
-    .table("Timetable")
-    .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
-    .join("Queue", "Timetable.doctorId", "=", "Queue.doctorId")
+    .table("Queue")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .join("Timetable", "Queue.doctorId", "=", "Timetable.doctorId")
     .select()
     .where("month", req.body.month)
     .where("departmentId", req.body.departmentId);
   res.send(data);
+});
+//add insert to timetable
+router.post("/addTimetable", async (req, res) => {
+  var data = await knex
+    .table("Timetable")
+    .insert({
+      Date: req.body.Date,
+      day: req.body.day,
+      month: req.body.month,
+      Year: req.body.Year,
+      timeStart: req.body.timeStart,
+      timeEnd: req.body.timeEnd,
+      doctorId: req.body.doctorId,
+      roomId: req.body.roomId
+    })
+    .select();
+  res.send(data);
   // console.log(data);
+});
+
+router.get("/getCountQueue/:id", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .count('queueId as countQueueId')
+    .where('doctorId', req.params.id)
+  res.send(data);
+});
+
+router.post("/getCountAppointment", async (req, res) => {
+  var data = await knex
+    .table("Appointment")
+    .count('appointmentId as countAppointmentId')
+    .where('doctorId', req.body.doctorId)
+    .where('date', req.body.date)
+  res.send(data);
 });
 
 
@@ -188,6 +246,7 @@ router.post("/getRoomAndDoctor", async (req, res) => {
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
+    .where('Date', req.body.Date)
     .where("day", req.body.day)
     .whereIn("month", req.body.month)
     .whereIn("year", req.body.year)
@@ -540,6 +599,8 @@ router.post("/updateDoctorTimetable", async (req, res) => {
       year: req.body.year,
       timeStart: req.body.timeStart,
       timeEnd: req.body.timeEnd,
+      roomId: req.body.roomId,
+      doctorId: req.body.doctorId
     })
     .where("timetableId", req.body.timetableId)
     .select();
@@ -679,16 +740,16 @@ router.post("/updateStep", async (req, res) => {
     .select()
     .where("group", req.body.group)
     .orderBy('step', 'asc')
-  console.log('stepstepstep :: length'+ stepInGroup.length ,stepInGroup)
+  // console.log('stepstepstep :: length' + stepInGroup.length, stepInGroup)
   if (stepInGroup.length > 0) {
     stepInGroup.map(async (data, i) => {
       console.log("----------------------------")
       // console.log('i and index', i, req.body.index)
       // console.log('i + 1', i + 1)
       // console.log('data + 1', data.step + 1)
-      console.log('stepingroup // '+i, data)
+      console.log('stepingroup // ' + i, data)
       if (i >= req.body.index) {
-        console.log("update i",i)
+        console.log("update i", i)
         // console.log('stepingroup ', data)
         // index = 2 // คนที่จะอัพเดตคือ 3 4 >> 4 5
         // ตัวที่ผ่านเข้ามาคือ 3
@@ -699,7 +760,7 @@ router.post("/updateStep", async (req, res) => {
           .update({
             step: data.step + 1
           });
-          console.log("finish")
+        console.log("finish")
       }
       console.log("----------------------------")
     })
