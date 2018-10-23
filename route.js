@@ -12,9 +12,7 @@ var knex = require("knex")({
     user: "test",
     password: "test",
     database: "PatientQueue",
-
   },
-
 });
 
 //Check Patient Data in Adminhome.js 
@@ -180,7 +178,6 @@ router.post("/getDoctors", async (req, res) => {
   res.send(data);
   console.log(data);
 });
-
 
 //getList Romm
 router.post("/getListRoom", async (req, res) => {
@@ -636,10 +633,6 @@ router.delete("/deleteListQueue/:id", async (req, res) => {
 });
 
 
-
-
-
-
 //check Group
 router.post("/checkGroupId", async (req, res) => {
   // console.log('group ', req.body.group)
@@ -667,10 +660,7 @@ router.post("/checkGroupRoomback", async (req, res) => {
   res.send(data)
 });
 
-
-
 //Call function Adminhome.js and forwward
-///// NEW //////////////////////////////
 router.post("/updateQueue", async (req, res) => {
   await knex
     .table("Queue")
@@ -686,7 +676,6 @@ router.post("/updateQueue", async (req, res) => {
 });
 
 ///user step at user page 
-
 router.post("/getAllStepQueue", async (req, res) => {
   // console.log(req.body.HN);
   var data = await knex
@@ -782,7 +771,6 @@ router.post("/updateStepQ", async (req, res) => {
   res.send('success')
 
 })
-
 
 //Get phone Number to use for otp
 router.post("/getPhoneNumber", async (req, res) => {
