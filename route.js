@@ -167,8 +167,8 @@ router.post("/getListDoctor", async (req, res) => {
     .where("month", req.body.month)
     .where("Year", req.body.year)
     .where("departmentId", req.body.departmentId);
-    console.log(data);
-    res.send(data);
+  console.log(data);
+  res.send(data);
 });
 
 // get only doctor 
@@ -584,6 +584,8 @@ router.post("/updateAppointment", async (req, res) => {
       year: req.body.year,
       timeStart: req.body.timeStart,
       timeEnd: req.body.timeEnd,
+      doctorId: req.body.doctorId,
+      HN: req.body.HN
     })
     .where("appointmentId", req.body.appointmentId)
     .select();
