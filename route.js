@@ -220,11 +220,12 @@ router.post("/addTimetable", async (req, res) => {
   // console.log(data);
 });
 
-router.get("/getCountQueue/:id", async (req, res) => {
+router.post("/getCountQueue", async (req, res) => {
   var data = await knex
     .table("Queue")
     .count('queueId as countQueueId')
-    .where('doctorId', req.params.id)
+    .where('doctorId', req.body.doctorId)
+    .where('date', req.body.date)
   res.send(data);
 });
 
@@ -792,5 +793,53 @@ router.post("/updateStatus", async (req, res) => {
     .update({
       statusId: req.body.statusId,
     });
+})
+
+router.post("/getRemainingDoctor", async (req, res) => {
+  console.log('body', req.body)
+  var doctorInDate = await knex
+    .table('Timetable')
+    .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
+    .where('date', req.body.Date)
+    .where("day", req.body.day)
+    .where("month", req.body.month)
+    .where("Year", req.body.year)
+    .where("doctorId", req.body.doctorId)
+    .where("departmentId", req.body.departmentId)
+    .select()
+
+  var patientLimit = await knex
+    .table('Timetable')
+    .where('date', req.body.Date)
+    .where("day", req.body.day)
+    .where("month", req.body.month)
+    .where("Year", req.body.year)
+    .where("doctorId", req.body.doctorId)
+    .select('patientLimit')
+  console.log('patientLimit : ', patientLimit)
+  var countQueue = await knex
+    .table("Queue")
+    .count('queueId as countQueueId')
+    .where('doctorId', req.body.doctorId)
+  console.log('countQueue : ', countQueue)
+
+  var countAppointment = await knex
+    .table("Appointment")
+    .count('appointmentId as countAppointmentId')
+    .where('doctorId', req.body.doctorId)
+    .where('date', req.body.Date)
+  console.log('countAppointment : ', countAppointment)
+
+  var sum = countQueue[0].countQueueId + countAppointment[0].countAppointmentId
+  console.log(sum)
+  let remaining = patientLimit[0].patientLimit - sum
+  console.log('remaining : ', remaining)
+
+  console.log('doctorInDate.patientLimit : ', doctorInDate[0].remaining)
+  console.log('doctorInDate : ', doctorInDate)
+  const data = Object.assign({ remaining }, doctorInDate);
+  console.log('data : ', data)
+  res.send(data);
+
 })
 module.exports = router;
