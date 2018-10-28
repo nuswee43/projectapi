@@ -795,6 +795,7 @@ router.post("/updateStatus", async (req, res) => {
     });
 })
 
+//check remaining of patientLimit
 router.post("/getRemainingDoctor", async (req, res) => {
   console.log('body', req.body)
   var doctorInDate = await knex
@@ -842,4 +843,26 @@ router.post("/getRemainingDoctor", async (req, res) => {
   res.send(data);
 
 })
+
+//Add or Delete Department Management 
+//add department 
+router.post("/addDepartment", async (req, res) => {
+  console.log('เข้า update step', req.body)
+  await knex
+    .table("Department")
+    .insert({
+      Department: req.body.Department,
+      type: req.body.type
+    });
+  res.send('success')
+})
+
+router.get("/getAllDepartment", async (req, res) => {
+  var data = await knex
+    .table("Department")
+    .select()
+  res.send(data);
+});
+
+
 module.exports = router;
