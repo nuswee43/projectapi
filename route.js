@@ -617,6 +617,7 @@ router.delete("/deleteAppointment/:id", async (req, res) => {
   res.send('success');
 });
 
+
 router.delete("/deleteTimetable/:id", async (req, res) => {
   await knex
     .table("Timetable")
@@ -863,6 +864,15 @@ router.get("/getAllDepartment", async (req, res) => {
     .select()
   res.send(data);
 });
+
+router.delete("/deleteDepartment/:departmentId", async (req, res) => {
+  await knex
+    .table("Department")
+    .where("departmentId", '=', req.params.departmentId)
+    .del()
+  res.send('success');
+});
+
 
 
 module.exports = router;
