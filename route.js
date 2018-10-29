@@ -868,6 +868,19 @@ router.post("/addRoom", async (req, res) => {
     });
   res.send('success')
 })
+//addDoctors
+router.post("/addDoctors", async (req, res) => {
+  await knex
+    .table("Doctor")
+    .insert({
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      avgtime: req.body.avgtime,
+      empId : req.body.empId,
+      departmentId: req.body.departmentId,
+    });
+  res.send('success')
+})
 
 //getDepartment
 router.get("/getAllDepartment", async (req, res) => {
@@ -886,11 +899,28 @@ router.get("/getAllRoom", async (req, res) => {
   res.send(data);
 });
 
+//get Doctor
+router.get("/getDoctors", async (req, res) => {
+  var data = await knex
+    .table("Doctor")
+    .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
+    .select()
+  res.send(data);
+});
+
 //delete Department
 router.delete("/deleteDepartment/:departmentId", async (req, res) => {
   await knex
     .table("Department")
     .where("departmentId", '=', req.params.departmentId)
+    .del()
+  res.send('success');
+});
+//deleteDoctors
+router.delete("/deleteDoctors/:empId", async (req, res) => {
+  await knex
+    .table("Doctor")
+    .where("empId", '=', req.params.empId)
     .del()
   res.send('success');
 });
