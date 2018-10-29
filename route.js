@@ -15,6 +15,18 @@ var knex = require("knex")({
   },
 });
 
+//nexmo
+const Client = require('authy-client').Client;
+const authy = new Client({ key: "QJ3XJ266b3AvqNKyKxFx1Xt8ZAlLYNgH" });
+const enums = require('authy-client').enums;
+
+
+const Nexmo = require('nexmo');
+const nexmo = new Nexmo({
+  apiKey: "ed268acf",
+  apiSecret: "ekUo5BMKsfRKlxoQ"
+});
+
 //Check Patient Data in Adminhome.js 
 router.get("/getPatient", async (req, res) => {
 
@@ -868,6 +880,7 @@ router.post("/addRoom", async (req, res) => {
     });
   res.send('success')
 })
+<<<<<<< HEAD
 //addDoctors
 router.post("/addDoctors", async (req, res) => {
   await knex
@@ -881,6 +894,70 @@ router.post("/addDoctors", async (req, res) => {
     });
   res.send('success')
 })
+=======
+//request otp
+router.post("/requestOTP", async (req, res) => {
+  console.log(req.body.recipient)
+  try {
+    const result = await requestOTP(req.body.recipient)
+    res.send(result)
+  } catch (error) {
+    res.send(error)
+  }
+})
+//validate otp
+router.post("/validateOTP", async (req, res) => {
+  console.log(req.body.recipient)
+  try {
+    const result = await validateOTP(req.body.requestId, req.body.code)
+    console.log('result', result)
+    res.send(result)
+  } catch (error) {
+    res.send(error)
+  }
+})
+
+const requestOTP = (recipient) => new Promise((resolve, reject) => {
+  nexmo.verify.request({ number: recipient, brand: 'patientQueue OTP' }, (err, result) => {
+    if (err) reject({ message: 'Server Error' })
+    if (result && result.status == '0') {
+      resolve({ requestId: result.request_id })
+      return
+    }
+    reject({ message: result, requestId: result.request_id })
+  })
+})
+
+const validateOTP = (requestId, code) => new Promise((resolve, reject) => {
+  nexmo.verify.check({ request_id: requestId, code }, (err, result) => {
+    if (err) reject({ message: 'Server Error' })
+    console.log("validateOTP", result);
+    if (result && result.status == '0') {
+      resolve({ message: result })
+      return
+    }
+    reject({ message: result, requestId: requestId })
+  })
+})
+
+const cancelOTP = (requestId) => new Promise((resolve, reject) => {
+  // { status: '6', error_text: 'The requestId \'01a218e770de499cb7b27b6dee3d144e\' does not exist or its no longer active.'}
+  // { status: '10', error_text: 'Concurrent verifications to the same number are not allowed'}
+  // { status: '19', error_text: 'Verification request [\'53c28372047c483f8e6e428d44093148\'] can\'t be cancelled within the first 30 seconds.'}
+  // { status : "19",error_text: "Verification request  ['7e7563aa38704911b36a67f2cd5d3759'] can't be cancelled now. Too many attempts to re-deliver have already been made."}
+  nexmo.verify.control({ request_id: requestId, cmd: 'cancel' }, (err, result) => {
+    if (err) reject({ message: err })
+    console.log("CANCEL!!!!", result)
+    if (result && result.status == '0') {
+      resolve({ message: 'cancel success!' })
+      return
+    } else {
+      reject({ message: result })
+    }
+  });
+})
+
+>>>>>>> a1b3279b6eb01150d29f10814893c41e4d6e0106
 
 //getDepartment
 router.get("/getAllDepartment", async (req, res) => {
