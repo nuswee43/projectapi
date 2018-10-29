@@ -903,6 +903,29 @@ router.delete("/deleteRoom/:roomId", async (req, res) => {
   res.send('success');
 });
 
+//get doctor except departmentId
+router.post("/getAllDoctors", async (req, res) => {
+  console.log(req.body)
+  var data = await knex
+    .table("Timetable")
+    .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
+    .select()
+    .where('Date', req.body.Date)
+    .where("day", req.body.day)
+    .where("month", req.body.month)
+    .where("Year", req.body.year)
+  console.log(data);
+  res.send(data);
+});
 
-
+//updateLimit
+router.post("/updateLimit", async (req, res) => {
+  await knex
+    .table("Timetable")
+    .where('timetableId', req.body.timetableId)
+    .update({
+      patientLimit: req.body.patientLimit
+    })
+  res.send('success')
+})
 module.exports = router;
