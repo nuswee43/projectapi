@@ -17,6 +17,18 @@ var knex = require("knex")({
 
 });
 
+//nexmo
+const Client = require('authy-client').Client;
+const authy = new Client({ key: "QJ3XJ266b3AvqNKyKxFx1Xt8ZAlLYNgH" });
+const enums = require('authy-client').enums;
+
+
+const Nexmo = require('nexmo');
+const nexmo = new Nexmo({
+  apiKey: "ed268acf",
+  apiSecret: "ekUo5BMKsfRKlxoQ"
+});
+
 //Check Patient Data in Adminhome.js 
 router.get("/getPatient", async (req, res) => {
   var data = await knex.table("Patient").select();
@@ -645,5 +657,124 @@ router.post("/getPhoneNumber", async(req, res)=>{
   .where("HN",req.body.HN);
   res.send(data);
 })
+
+router.post("/requestOTP", async (req, res) => {
+  console.log(req.body.recipient)
+  try {
+    const result = await requestOTP(req.body.recipient)
+    res.send(result)
+  } catch (error) {
+    res.send(error)
+  }
+})
+
+// router.post("/verifyOTP", async (req, res) => {
+//   console.log(req.body.phoneNumber)
+//   try {
+//     const result = await verifyOTP(req.body.phoneNumber, req.body.token)
+//     res.send(result)
+//   } catch (error) {
+//     res.send(error)
+//   }
+// })
+
+router.post("/validateOTP", async (req, res) => {
+  console.log(req.body.recipient)
+  try {
+    const result = await validateOTP(req.body.requestId, req.body.code)
+    console.log('result', result)
+    res.send(result)
+  } catch (error) {
+    res.send(error)
+  }
+})
+
+//TWILIO
+// const requestOTP = (phoneNumber) => new Promise((resolve,reject) => {
+//   console.log("เข้า requestOTP")
+//   authy.startPhoneVerification({ countryCode: 'TH', locale: 'th', phone: phoneNumber, via: enums.verificationVia.SMS }, function (err, res) {
+//     if (err) reject(err);
+//     console.log('Phone information', res);
+//     resolve(res)
+//   });
+// })
+
+
+// const verifyOTP = (phoneNumber,token) => new Promise((resolve, reject) => {
+//   console.log("เข้า verifyOTP")
+//   client.verifyPhone({ countryCode: 'TH', phone: phoneNumber, token: token }, function (err, res) {
+//     console.log('Verification', res);
+//     if (err) throw reject(err);
+//     console.log('Verification code is correct');
+//     resolve(res)
+//   });
+// })
+
+
+const requestOTP = (recipient) => new Promise((resolve, reject) => {
+  nexmo.verify.request({ number: recipient, brand: 'patientQueue OTP' }, (err, result) => {
+    if (err) reject({ message: 'Server Error' })
+    if (result && result.status == '0') {
+      resolve({ requestId: result.request_id })
+      return
+    }
+    reject({ message: result, requestId: result.request_id })
+  })
+})
+
+const validateOTP = (requestId, code) => new Promise((resolve, reject) => {
+  nexmo.verify.check({ request_id: requestId, code }, (err, result) => {
+    if (err) reject({ message: 'Server Error' })
+    console.log("validateOTP", result);
+    if (result && result.status == '0') {
+      resolve({ message: result })
+      return
+    }
+    reject({ message: result, requestId: requestId })
+  })
+})
+
+const cancelOTP = (requestId) => new Promise((resolve, reject) => {
+  // { status: '6', error_text: 'The requestId \'01a218e770de499cb7b27b6dee3d144e\' does not exist or its no longer active.'}
+  // { status: '10', error_text: 'Concurrent verifications to the same number are not allowed'}
+  // { status: '19', error_text: 'Verification request [\'53c28372047c483f8e6e428d44093148\'] can\'t be cancelled within the first 30 seconds.'}
+  // { status : "19",error_text: "Verification request  ['7e7563aa38704911b36a67f2cd5d3759'] can't be cancelled now. Too many attempts to re-deliver have already been made."}
+  nexmo.verify.control({ request_id: requestId, cmd: 'cancel' }, (err, result) => {
+    if (err) reject({ message: err })
+    console.log("CANCEL!!!!", result)
+    if (result && result.status == '0') {
+      resolve({ message: 'cancel success!' })
+      return
+    } else {
+      reject({ message: result })
+    }
+  });
+})
+
+
+// PhoneVerification.prototype.requestPhoneVerification = function (phone_number, country_code, via, callback) {
+//   this._request("post", "/protected/json/phones/verification/start", {
+//     "api_key": this.apiKey,
+//     "phone_number": phone_number,
+//     "via": via,
+//     "country_code": country_code,
+//     "code_length": 4
+//   },
+//     callback
+//   );
+// };
+
+// PhoneVerification.prototype.verifyPhoneToken = function (phone_number, country_code, token, callback) {
+
+//   console.log('in verify phone');
+//   this._request("get", "/protected/json/phones/verification/check", {
+//     "api_key": this.apiKey,
+//     "verification_code": token,
+//     "phone_number": phone_number,
+//     "country_code": country_code
+//   },
+//     callback
+//   );
+// };
 
 module.exports = router;
