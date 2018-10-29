@@ -880,21 +880,6 @@ router.post("/addRoom", async (req, res) => {
     });
   res.send('success')
 })
-<<<<<<< HEAD
-//addDoctors
-router.post("/addDoctors", async (req, res) => {
-  await knex
-    .table("Doctor")
-    .insert({
-      firstname: req.body.firstname,
-      lastname: req.body.lastname,
-      avgtime: req.body.avgtime,
-      empId : req.body.empId,
-      departmentId: req.body.departmentId,
-    });
-  res.send('success')
-})
-=======
 //request otp
 router.post("/requestOTP", async (req, res) => {
   console.log(req.body.recipient)
@@ -957,7 +942,6 @@ const cancelOTP = (requestId) => new Promise((resolve, reject) => {
   });
 })
 
->>>>>>> a1b3279b6eb01150d29f10814893c41e4d6e0106
 
 //getDepartment
 router.get("/getAllDepartment", async (req, res) => {
