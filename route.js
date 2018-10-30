@@ -202,15 +202,28 @@ router.post("/getListRoom", async (req, res) => {
   // console.log(data);
 });
 
+//check Status Queue
+router.post("/checkStatusDoctor", async (req, res) => {
+  console.log('date date : ', req.body.date)
+  var data = await knex
+    .table("Queue")
+    .select()
+    .where("doctorId", req.body.doctorId)
+    .where("date", '<', req.body.date + ' 23:59:59')
+  res.send(data);
+  // console.log(data);
+});
+
 //get Timetable 
 router.post("/getTimetable", async (req, res) => {
   var data = await knex
-    .table("Queue")
-    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
-    .join("Timetable", "Queue.doctorId", "=", "Timetable.doctorId")
+    .table("Timetable")
+    // .join("Queue", "Timetable.roomId", "=", "Timetable.roomId")
+    .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
     .where("month", req.body.month)
-    .where("departmentId", req.body.departmentId);
+    .where("departmentId", req.body.departmentId)
+  // .groupBy('Timetable.roomId')
   res.send(data);
 });
 //add insert to timetable
@@ -728,13 +741,13 @@ const client = require('twilio')(accountSid, authToken);
 router.post('/sendText', (req, res) => {
   const recipient = req.body.recipient
   const textmessage = req.body.textmessage
-    client.messages.create({
-      body: textmessage,
-      from: '+18647540772',
-      to: recipient
-    })
-      .then(message => console.log(message.sid))
-      .done();
+  client.messages.create({
+    body: textmessage,
+    from: '+18647540772',
+    to: recipient
+  })
+    .then(message => console.log(message.sid))
+    .done();
 })
 
 router.post("/updateStep", async (req, res) => {
