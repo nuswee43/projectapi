@@ -209,7 +209,7 @@ router.post("/checkStatusDoctor", async (req, res) => {
     .table("Queue")
     .select()
     .where("doctorId", req.body.doctorId)
-    .where("date", '<', req.body.date + ' 23:59:59')
+    // .where("date", '<', req.body.date + ' 23:59:59')
   res.send(data);
   // console.log(data);
 });
