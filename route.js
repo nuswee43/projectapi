@@ -83,7 +83,6 @@ router.post("/addPatientQ", async (req, res) => {
   });
   console.log("ADD Q Success")
   res.send("Success");
-
 });
 
 //Check HN IN Department ว่าอยู๋ในแผนกไหน Adminhome.js (Addqueue Function)
@@ -932,7 +931,7 @@ router.post("/validateOTP", async (req, res) => {
 const requestOTP = (recipient) => new Promise((resolve, reject) => {
   nexmo.verify.request({ number: recipient, brand: 'patientQueue OTP' }, (err, result) => {
     if (err) reject({ message: 'Server Error' })
-    console.log('asdasdasdasdasd ',result)
+    console.log('asdasdasdasdasd ', result)
     if (result && result.status == '0') {
       resolve({ requestId: result.request_id })
       return
@@ -1053,7 +1052,7 @@ router.post("/updateAbsent", async (req, res) => {
     .table("Queue")
     .where('runningNumber', req.body.runningNumber)
     .update({
-      statusId : 6
+      statusId: 6
     })
   res.send('success')
 })
@@ -1063,8 +1062,32 @@ router.post("/updateQueueAbsent", async (req, res) => {
     .table("Queue")
     .where('runningNumber', req.body.runningNumber)
     .update({
-      statusId : 1
+      statusId: 1
     })
   res.send('success')
 })
+
+//getDataAppointment
+router.post("/getDataAppointment", async (req, res) => {
+  var data = await knex
+    .table("Appointment")
+    // .join("Timetable", "Appointment.doctorId", "=", "Timetable.doctorId")
+    .where('appointmentId', req.body.appointmentId)
+    .select()
+  // const data = Object.assign({ remaining }, doctorInDate);
+  res.send(data);
+});
+
+router.post("/getDataTimetable", async (req, res) => {
+  console.log('date date : ', req.body.date)
+  var data = await knex
+    .table("Timetable")
+    .select()
+    .where("doctorId", req.body.doctorId)
+    .where("day", req.body.day)
+    .where("Date", req.body.date)
+    .where("month", req.body.month)
+    .where("year", req.body.year)
+  res.send(data);
+});
 module.exports = router;
