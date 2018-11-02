@@ -1057,5 +1057,14 @@ router.post("/updateAbsent", async (req, res) => {
     })
   res.send('success')
 })
-
+//updateQueueAbsent
+router.post("/updateQueueAbsent", async (req, res) => {
+  await knex
+    .table("Queue")
+    .where('runningNumber', req.body.runningNumber)
+    .update({
+      statusId : 1
+    })
+  res.send('success')
+})
 module.exports = router;
