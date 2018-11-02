@@ -23,8 +23,8 @@ const enums = require('authy-client').enums;
 
 const Nexmo = require('nexmo');
 const nexmo = new Nexmo({
-  apiKey: "ed268acf",
-  apiSecret: "ekUo5BMKsfRKlxoQ"
+  apiKey: "929e744c",
+  apiSecret: "qIsPlZ3NK0nJp3XY"
 });
 
 //Check Patient Data in Adminhome.js 
@@ -209,7 +209,7 @@ router.post("/checkStatusDoctor", async (req, res) => {
     .table("Queue")
     .select()
     .where("doctorId", req.body.doctorId)
-    // .where("date", '<', req.body.date + ' 23:59:59')
+  // .where("date", '<', req.body.date + ' 23:59:59')
   res.send(data);
   // console.log(data);
 });
@@ -352,10 +352,11 @@ router.get("/getLabQueue/:roomId", async (req, res) => {
     .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
     .select()
     .where("Queue.roomId", req.params.roomId)
+    .where("Queue.statusId", '=', 5)
   //test
-  // .where("Queue.statusId", "!=", 1)
+  // .where("Queue.step", "!=", 1)
   // .where("Room.roomId", req.params.roomId);
-  
+
   res.send(data);
 });
 //----------------------
@@ -371,6 +372,20 @@ router.get("/getListLabQueue", async (req, res) => {
 
   res.send(data);
 });
+//----------------------------
+router.get("/getListAbsent", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .select()
+    .where("statusId", 6);
+
+  res.send(data);
+});
+//-----------------------------
 //----------------------
 //Neveruse
 router.get("/getqueuqueue", async (req, res) => {
@@ -524,7 +539,6 @@ router.get("/getAppointment/:id", async (req, res) => {
 });
 
 router.get("/updateAllPerDay", async (req, res) => {
-
   var getDate = new Date(momentTz.tz(new Date(), "Asia/Bangkok").format())
   var month = new Array(
     "jan",
@@ -918,6 +932,7 @@ router.post("/validateOTP", async (req, res) => {
 const requestOTP = (recipient) => new Promise((resolve, reject) => {
   nexmo.verify.request({ number: recipient, brand: 'patientQueue OTP' }, (err, result) => {
     if (err) reject({ message: 'Server Error' })
+    console.log('asdasdasdasdasd ',result)
     if (result && result.status == '0') {
       resolve({ requestId: result.request_id })
       return
@@ -1032,4 +1047,15 @@ router.post("/updateLimit", async (req, res) => {
     })
   res.send('success')
 })
+
+router.post("/updateAbsent", async (req, res) => {
+  await knex
+    .table("Queue")
+    .where('runningNumber', req.body.runningNumber)
+    .update({
+      statusId : 6
+    })
+  res.send('success')
+})
+
 module.exports = router;
