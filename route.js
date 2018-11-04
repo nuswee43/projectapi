@@ -278,12 +278,12 @@ router.post("/getRoomAndDoctor", async (req, res) => {
   res.send(data);
   // console.log(data);
 });
-//never use
-router.delete("/deletePatientQ", async (req, res) => {
+//use in cancel queue in absent 
+router.delete("/deletePatientQ/:id", async (req, res) => {
   var data = await knex
     .table("Queue")
     .where({
-      HN: req.body.HN
+      runningNumber: req.params.id
     })
     .delete();
   res.end("success");
