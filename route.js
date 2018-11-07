@@ -836,7 +836,7 @@ router.post("/updateStatus", async (req, res) => {
 
 //check remaining of patientLimit
 router.post("/getRemainingDoctor", async (req, res) => {
-  console.log('body', req.body)
+  console.log('body1234 ', req.body)
   var doctorInDate = await knex
     .table('Timetable')
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
