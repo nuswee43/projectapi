@@ -949,6 +949,7 @@ const validateOTP = (requestId, code) => new Promise((resolve, reject) => {
       return
     }
     reject({ message: result, requestId: requestId })
+    reject({ message: result, requestId: requestId })
   })
 })
 
