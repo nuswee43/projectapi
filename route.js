@@ -583,17 +583,20 @@ router.get("/updateAllPerDay", async (req, res) => {
     if (dateQueue.length != 0) {
       for (let j = 0; j < dateQueue.length; j++) {
         let tmp1 = new Date(dateQueue[j].date)
+        console.log('tmp1 ' + tmp1)
         if (dateQueue.length - 1 == j) {
           range = range + 0
         } else {
           let tmp2 = new Date(dateQueue[j + 1].date)
-          // console.log("tmp2: " + tmp2)
+          console.log("tmp2: " + tmp2)
           range = diff_minutes(tmp2, tmp1)
-
+          console.log('range ' + range)
           sumRange += range
+          console.log('sum ' + sumRange)
         }
       }
       var avgMinutes = sumRange / dateQueue.length
+      console.log(avgMinutes)
       updateAvgTime = await knex
         .table("Doctor")
         .where("empId", listEmpId[i].doctorId)
@@ -741,9 +744,12 @@ router.post("/getAllAppointment", async (req, res) => {
   res.send(data);
 });
 
-
-const accountSid = 'ACd6b78055eb3dbbebbb32eafe7f6d275e'
-const authToken = '45179b9b7d88c4989d13a81c82f16d91'
+//AC5cf1bd553585fc72b5ac8eb0ec2c43e7
+//ACd6b78055eb3dbbebbb32eafe7f6d275e
+const accountSid = 'AC5cf1bd553585fc72b5ac8eb0ec2c43e7'
+//bd1dd85fb32c4ff7598380f447cecc57
+//45179b9b7d88c4989d13a81c82f16d91
+const authToken = 'bd1dd85fb32c4ff7598380f447cecc57'
 const client = require('twilio')(accountSid, authToken);
 
 router.post('/sendText', (req, res) => {
@@ -751,7 +757,9 @@ router.post('/sendText', (req, res) => {
   const textmessage = req.body.textmessage
   client.messages.create({
     body: textmessage,
-    from: '+18647540772',
+    from: '+17257264897',
+    //+18647540772
+    //+17257264897
     to: recipient
   })
     .then(message => console.log(message.sid))
