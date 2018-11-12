@@ -29,8 +29,8 @@ const nexmo = new Nexmo({
 
 //Check Patient Data in Adminhome.js 
 router.get("/getPatient", async (req, res) => {
-
-  var data = await knex.table("Patient").select();
+  var data = await knex.table("Patient")
+    .select();
   res.send(data);
 });
 
@@ -47,7 +47,6 @@ router.get("/getMax", async (req, res) => {
 
 //Update Queue in Adminhome.js (Addqueue Function)
 router.post("/addPatientQ", async (req, res) => {
-  console.log("ADD Q!!!")
   // console.log(req.body)
   var maxHN = await knex
     .table("Queue")
@@ -81,7 +80,6 @@ router.post("/addPatientQ", async (req, res) => {
     roomBack: req.body.roomBack,
     step: req.body.step
   });
-  console.log("ADD Q Success")
   res.send("Success");
 });
 
@@ -166,7 +164,6 @@ router.get("/currentQwithDoctor/:id", async (req, res) => {
 });
 //get list doctor 
 router.post("/getListDoctor", async (req, res) => {
-  console.log(req.body)
   var data = await knex
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
@@ -176,7 +173,6 @@ router.post("/getListDoctor", async (req, res) => {
     .where("month", req.body.month)
     .where("Year", req.body.year)
     .where("departmentId", req.body.departmentId);
-  console.log(data);
   res.send(data);
 });
 
@@ -187,7 +183,6 @@ router.post("/getDoctors", async (req, res) => {
     .select()
     .whereIn("departmentId", req.body.departmentId);
   res.send(data);
-  console.log(data);
 });
 
 //getList Romm
@@ -203,7 +198,6 @@ router.post("/getListRoom", async (req, res) => {
 
 //check Status Queue
 router.post("/checkStatusDoctor", async (req, res) => {
-  console.log('date date : ', req.body.date)
   var data = await knex
     .table("Queue")
     .select()
@@ -775,13 +769,10 @@ router.post("/updateStep", async (req, res) => {
   // console.log('stepstepstep :: length' + stepInGroup.length, stepInGroup)
   if (stepInGroup.length > 0) {
     stepInGroup.map(async (data, i) => {
-      console.log("----------------------------")
       // console.log('i and index', i, req.body.index)
       // console.log('i + 1', i + 1)
       // console.log('data + 1', data.step + 1)
-      console.log('stepingroup // ' + i, data)
       if (i >= req.body.index) {
-        console.log("update i", i)
         // console.log('stepingroup ', data)
         // index = 2 // คนที่จะอัพเดตคือ 3 4 >> 4 5
         // ตัวที่ผ่านเข้ามาคือ 3
@@ -792,16 +783,13 @@ router.post("/updateStep", async (req, res) => {
           .update({
             step: data.step + 1
           });
-        console.log("finish")
       }
-      console.log("----------------------------")
     })
   }
   res.send('success')
 });
 
 router.post("/updateStepQ", async (req, res) => {
-  console.log('เข้า update step', req.body)
   var data = await knex
     .table("Queue")
     .where("runningNumber", req.body.runningNumber)
@@ -822,7 +810,6 @@ router.post("/getPhoneNumber", async (req, res) => {
 })
 
 router.post("/updateStatus", async (req, res) => {
-  console.log('เข้า update statussss', req.body)
   var data = await knex
     .table("Queue")
     // .where("HN", req.body.HN)
@@ -836,7 +823,6 @@ router.post("/updateStatus", async (req, res) => {
 
 //check remaining of patientLimit
 router.post("/getRemainingDoctor", async (req, res) => {
-  console.log('body1234 ', req.body)
   var doctorInDate = await knex
     .table('Timetable')
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
@@ -856,34 +842,41 @@ router.post("/getRemainingDoctor", async (req, res) => {
     .where("Year", req.body.year)
     .where("doctorId", req.body.doctorId)
     .select('patientLimit')
-  console.log('patientLimit : ', patientLimit)
   var countQueue = await knex
     .table("Queue")
     .count('queueId as countQueueId')
     .where('doctorId', req.body.doctorId)
-  console.log('countQueue : ', countQueue)
 
   var countAppointment = await knex
     .table("Appointment")
     .count('appointmentId as countAppointmentId')
     .where('doctorId', req.body.doctorId)
     .where('date', req.body.Date)
-  console.log('countAppointment : ', countAppointment)
 
   var sum = countQueue[0].countQueueId + countAppointment[0].countAppointmentId
-  console.log(sum)
   let remaining = patientLimit[0].patientLimit - sum
-  console.log('remaining : ', remaining)
 
-  console.log('doctorInDate.patientLimit : ', doctorInDate[0].remaining)
-  console.log('doctorInDate : ', doctorInDate)
   const data = Object.assign({ remaining }, doctorInDate);
-  console.log('data : ', data)
   res.send(data);
 
 })
 
-//Add or Delete Department Management 
+//Add or Delete Department Management
+//add Patients 
+router.post("/addPatient", async (req, res) => {
+  await knex
+    .table("Patient")
+    .insert({
+      HN: req.body.HN,
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      dob: req.body.dob,
+      gender: req.body.gender,
+      phonenumber: req.body.phonenumber
+    });
+  res.send('success')
+})
+
 //add department 
 router.post("/addDepartment", async (req, res) => {
   await knex
@@ -1005,6 +998,18 @@ router.delete("/deleteDepartment/:departmentId", async (req, res) => {
     .del()
   res.send('success');
 });
+
+//deletePatient
+router.delete("/deletePatient/:firstname", async (req, res) => {
+  console.log(req.params)
+  await knex
+    .table("Patient")
+    .where("firstName", 'like', req.params.firstname)
+    .del()
+  res.send('success');
+});
+
+
 //deleteDoctors
 router.delete("/deleteDoctors/:empId", async (req, res) => {
   await knex
@@ -1024,7 +1029,6 @@ router.delete("/deleteRoom/:roomId", async (req, res) => {
 
 //get doctor except departmentId
 router.post("/getAllDoctors", async (req, res) => {
-  console.log(req.body)
   var data = await knex
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
@@ -1033,7 +1037,6 @@ router.post("/getAllDoctors", async (req, res) => {
     .where("day", req.body.day)
     .where("month", req.body.month)
     .where("Year", req.body.year)
-  console.log(data);
   res.send(data);
 });
 
@@ -1080,7 +1083,6 @@ router.post("/getDataAppointment", async (req, res) => {
 });
 
 router.post("/getDataTimetable", async (req, res) => {
-  console.log('date date : ', req.body.date)
   var data = await knex
     .table("Timetable")
     .select()
