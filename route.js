@@ -753,6 +753,7 @@ const authToken = 'bd1dd85fb32c4ff7598380f447cecc57'
 const client = require('twilio')(accountSid, authToken);
 
 router.post('/sendText', (req, res) => {
+  console.log('เข้าๆๆๆๆๆๆๆๆ ',req.body.textmessage)
   const recipient = req.body.recipient
   const textmessage = req.body.textmessage
   client.messages.create({
@@ -761,9 +762,13 @@ router.post('/sendText', (req, res) => {
     //+18647540772
     //+17257264897
     to: recipient
-  })
-    .then(message => console.log(message.sid))
-    .done();
+  },
+    (err, message) => {
+      console.log(message.sid);
+    }
+  )
+    // .then(message => console.log(message.sid))
+    // .done();
 })
 
 router.post("/updateStep", async (req, res) => {
