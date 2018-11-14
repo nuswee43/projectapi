@@ -344,8 +344,9 @@ router.get("/getLabQueue/:roomId", async (req, res) => {
     .join("Patient", "Queue.HN", "=", "Patient.HN")
     .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
     .select()
+    // .havingIn('Queue.roomId',req.params.roomId)
     .where("Queue.roomId", req.params.roomId)
-    .where("Queue.statusId", '=', 5)
+    .where("Queue.roomBack", '=', 1)
   //test
   // .where("Queue.step", "!=", 1)
   // .where("Room.roomId", req.params.roomId);
@@ -709,6 +710,7 @@ router.post("/updateQueue", async (req, res) => {
     .update({
       statusId: req.body.statusId,
       date: new Date(momentTz().tz(req.body.date, "Asia/Bangkok").format()),
+      roomBack: req.body.roomBack
     });
   res.send("UPDATE SUCCESS");
 });
@@ -731,6 +733,10 @@ router.post("/getAllStepQueue", async (req, res) => {
 
   res.send(data);
 });
+
+///All Q
+
+
 ///
 router.post("/getAllAppointment", async (req, res) => {
   var data = await knex
@@ -753,7 +759,7 @@ const authToken = 'bd1dd85fb32c4ff7598380f447cecc57'
 const client = require('twilio')(accountSid, authToken);
 
 router.post('/sendText', (req, res) => {
-  console.log('เข้าๆๆๆๆๆๆๆๆ ',req.body.textmessage)
+  console.log('เข้าๆๆๆๆๆๆๆๆ ', req.body.textmessage)
   const recipient = req.body.recipient
   const textmessage = req.body.textmessage
   client.messages.create({
@@ -767,8 +773,8 @@ router.post('/sendText', (req, res) => {
       console.log(message.sid);
     }
   )
-    // .then(message => console.log(message.sid))
-    // .done();
+  // .then(message => console.log(message.sid))
+  // .done();
 })
 
 router.post("/updateStep", async (req, res) => {
