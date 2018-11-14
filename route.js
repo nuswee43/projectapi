@@ -896,6 +896,20 @@ router.post("/addPatient", async (req, res) => {
   res.send('success')
 })
 
+//addDoctors
+router.post("/addDoctors", async (req, res) => {
+  await knex
+    .table("Doctor")
+    .insert({
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      avgtime: req.body.avgtime,
+      empId: req.body.empId,
+      departmentId: req.body.departmentId,
+    });
+  res.send('success')
+})
+
 //add department 
 router.post("/addDepartment", async (req, res) => {
   await knex
