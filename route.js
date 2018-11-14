@@ -202,8 +202,8 @@ router.post("/checkStatusDoctor", async (req, res) => {
     .table("Queue")
     .select()
     .where("doctorId", req.body.doctorId)
-    .where("date", '<', req.body.date 
-    + ' 23:59:59'
+    .where("date", '<', req.body.date
+      + ' 23:59:59'
     )
   res.send(data);
   // console.log(data);
@@ -535,6 +535,7 @@ router.get("/getAppointment/:id", async (req, res) => {
 });
 
 router.get("/updateAllPerDay", async (req, res) => {
+  console.log('เข้า update perday')
   var getDate = new Date(momentTz.tz(new Date(), "Asia/Bangkok").format())
   var month = new Array(
     "jan",
@@ -609,6 +610,7 @@ router.get("/updateAllPerDay", async (req, res) => {
       break;
     }
   }
+  res.send('Success')
 });
 
 router.post("/updateAppointment", async (req, res) => {
@@ -719,7 +721,7 @@ router.post("/updateQueue", async (req, res) => {
 
 ///user step at user page 
 router.post("/getAllStepQueue", async (req, res) => {
-  // console.log(req.body.HN);
+  console.log('เข้าเข้าเข้าเข้าเข้า step')
   var data = await knex
     .table("Queue")
     .join("Room", "Queue.roomId", "=", "Room.roomId")
@@ -733,6 +735,7 @@ router.post("/getAllStepQueue", async (req, res) => {
     .where("Queue.group", req.body.group)
     .orderBy('step', 'asc')
 
+  console.log('dataatatatat   ', data)
   res.send(data);
 });
 
@@ -840,6 +843,7 @@ router.post("/updateStatus", async (req, res) => {
     .update({
       statusId: req.body.statusId,
     });
+    res.send('success')
 })
 
 //check remaining of patientLimit
