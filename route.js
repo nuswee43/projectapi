@@ -316,6 +316,19 @@ router.get("/getNurse", async (req, res) => {
   res.send(data);
 });
 
+router.get("/getAllQueue", async (req, res) => {
+  var data = await knex
+    .table("Queue")
+    .join("Room", "Queue.roomId", "=", "Room.roomId")
+    .join("Department", "Room.departmentId", "=", "Department.departmentId")
+    .join("Patient", "Queue.HN", "=", "Patient.HN")
+    .join("Doctor", "Queue.doctorId", "=", "Doctor.empId")
+    .join("Status", "Queue.statusId", "=", "Status.statusId")
+    .select()
+  // console.log(data)
+  res.send(data);
+});
+
 //queues show queue in Adminhome.js
 router.get("/getQueue/:roomId", async (req, res) => {
   var data = await knex
@@ -657,6 +670,24 @@ router.delete("/deleteTimetable/:id", async (req, res) => {
     .del();
   res.send("success");
 });
+
+//deleteQueue 
+router.delete("/deleteQueue/:id", async (req, res) => {
+  await knex
+    .table("Queue")
+    .where("runningNumber", "=", req.params.id)
+    .del();
+  res.send("success");
+});
+
+//delete all queue  (deleteAllQueue)
+router.delete("/deleteAllQueue", async (req, res) => {
+  await knex
+    .table("Queue")
+    .del();
+  res.send("success");
+});
+
 
 router.delete("/deleteListQueue/:id", async (req, res) => {
   await knex
