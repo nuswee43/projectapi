@@ -1,8 +1,8 @@
-var Moment = require('moment');
-var MomentRange = require('moment-range');
+var Moment = require("moment");
+var MomentRange = require("moment-range");
 var moment = MomentRange.extendMoment(Moment);
-const momentTz = require('moment-timezone')
-require('twix');
+const momentTz = require("moment-timezone");
+require("twix");
 const express = require("express");
 var router = express.Router();
 var knex = require("knex")({
@@ -11,26 +11,24 @@ var knex = require("knex")({
     host: "128.199.98.237",
     user: "test",
     password: "test",
-    database: "PatientQueue",
-  },
+    database: "PatientQueue"
+  }
 });
 
 //nexmo
-const Client = require('authy-client').Client;
+const Client = require("authy-client").Client;
 const authy = new Client({ key: "QJ3XJ266b3AvqNKyKxFx1Xt8ZAlLYNgH" });
-const enums = require('authy-client').enums;
+const enums = require("authy-client").enums;
 
-
-const Nexmo = require('nexmo');
+const Nexmo = require("nexmo");
 const nexmo = new Nexmo({
   apiKey: "929e744c",
   apiSecret: "qIsPlZ3NK0nJp3XY"
 });
 
-//Check Patient Data in Adminhome.js 
+//Check Patient Data in Adminhome.js
 router.get("/getPatient", async (req, res) => {
-  var data = await knex.table("Patient")
-    .select();
+  var data = await knex.table("Patient").select();
   res.send(data);
 });
 
@@ -54,16 +52,16 @@ router.post("/addPatientQ", async (req, res) => {
     .where("roomId", req.body.roomId)
     .max("queueId as maxQueueId");
 
-  let groupId = 0
+  let groupId = 0;
   // console.log(maxHN[0].maxQueueId);
-  if (req.body.queueDefault === 'queueDefault') {
+  if (req.body.queueDefault === "queueDefault") {
     let tmp = await knex
       .table("Queue")
       .select()
       .max("group as maxGroupId");
-    groupId = tmp[0].maxGroupId + 1
+    groupId = tmp[0].maxGroupId + 1;
   } else {
-    groupId = req.body.groupId
+    groupId = req.body.groupId;
   }
   // console.log('groupid ', groupId)
   // console.log('roomId', req.body.roomId)
@@ -150,7 +148,7 @@ router.get("/doctorTime", async (req, res) => {
   res.send(data);
 });
 
-//check Doctor in room at Adminhome.js 
+//check Doctor in room at Adminhome.js
 router.get("/currentQwithDoctor/:id", async (req, res) => {
   var data = await knex
     .table("Queue")
@@ -162,13 +160,13 @@ router.get("/currentQwithDoctor/:id", async (req, res) => {
     .where("doctorId", req.params.id);
   res.send(data);
 });
-//get list doctor 
+//get list doctor
 router.post("/getListDoctor", async (req, res) => {
   var data = await knex
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
-    .where('Date', req.body.Date)
+    .where("Date", req.body.Date)
     .where("day", req.body.day)
     .where("month", req.body.month)
     .where("Year", req.body.year)
@@ -176,7 +174,7 @@ router.post("/getListDoctor", async (req, res) => {
   res.send(data);
 });
 
-// get only doctor 
+// get only doctor
 router.post("/getDoctors", async (req, res) => {
   var data = await knex
     .table("Doctor")
@@ -202,14 +200,12 @@ router.post("/checkStatusDoctor", async (req, res) => {
     .table("Queue")
     .select()
     .where("doctorId", req.body.doctorId)
-    .where("date", '<', req.body.date
-      + ' 23:59:59'
-    )
+    .where("date", "<", req.body.date + " 23:59:59");
   res.send(data);
   // console.log(data);
 });
 
-//get Timetable 
+//get Timetable
 router.post("/getTimetable", async (req, res) => {
   var data = await knex
     .table("Timetable")
@@ -217,7 +213,7 @@ router.post("/getTimetable", async (req, res) => {
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
     .where("month", req.body.month)
-    .where("departmentId", req.body.departmentId)
+    .where("departmentId", req.body.departmentId);
   // .groupBy('Timetable.roomId')
   res.send(data);
 });
@@ -243,21 +239,20 @@ router.post("/addTimetable", async (req, res) => {
 router.post("/getCountQueue", async (req, res) => {
   var data = await knex
     .table("Queue")
-    .count('queueId as countQueueId')
-    .where('doctorId', req.body.doctorId)
-    .where('date', req.body.date)
+    .count("queueId as countQueueId")
+    .where("doctorId", req.body.doctorId)
+    .where("date", req.body.date);
   res.send(data);
 });
 
 router.post("/getCountAppointment", async (req, res) => {
   var data = await knex
     .table("Appointment")
-    .count('appointmentId as countAppointmentId')
-    .where('doctorId', req.body.doctorId)
-    .where('date', req.body.date)
+    .count("appointmentId as countAppointmentId")
+    .where("doctorId", req.body.doctorId)
+    .where("date", req.body.date);
   res.send(data);
 });
-
 
 // เช็ค forwardDepertment ID
 router.post("/getRoomAndDoctor", async (req, res) => {
@@ -265,7 +260,7 @@ router.post("/getRoomAndDoctor", async (req, res) => {
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
-    .where('Date', req.body.Date)
+    .where("Date", req.body.Date)
     .where("day", req.body.day)
     .whereIn("month", req.body.month)
     .whereIn("year", req.body.year)
@@ -274,7 +269,7 @@ router.post("/getRoomAndDoctor", async (req, res) => {
   res.send(data);
   // console.log(data);
 });
-//use in cancel queue in absent 
+//use in cancel queue in absent
 router.delete("/deletePatientQ/:id", async (req, res) => {
   var data = await knex
     .table("Queue")
@@ -348,7 +343,7 @@ router.get("/getLabQueue/:roomId", async (req, res) => {
     .select()
     // .havingIn('Queue.roomId',req.params.roomId)
     .where("Queue.roomId", req.params.roomId)
-    .where("Queue.roomBack", '=', 1)
+    .where("Queue.roomBack", "=", 1);
   //test
   // .where("Queue.step", "!=", 1)
   // .where("Room.roomId", req.params.roomId);
@@ -412,7 +407,6 @@ router.get("/getqueuqueue", async (req, res) => {
 //   res.send("data");
 // });
 
-
 router.post("/updateCurrentLabQueue", async (req, res) => {
   // console.log(req.body.HN);
   var data = await knex
@@ -436,7 +430,6 @@ router.post("/updateForwardQueue", async (req, res) => {
   // // .table("Queue")
   // // .select("group")
   // // .max("group as maxGroups")
-
 
   // let tmp = {};
 
@@ -514,13 +507,13 @@ router.post("/addAppointment", async (req, res) => {
       timeStart: req.body.startTime,
       timeEnd: req.body.endTime,
       doctorId: req.body.doctorId,
-      HN: req.body.HN,
+      HN: req.body.HN
       // roomId : req.body.roomId
     })
     .select();
   res.send(data);
 });
-//use with calendar 
+//use with calendar
 router.get("/getAppointment/:id", async (req, res) => {
   var data = await knex
     .table("Appointment")
@@ -528,15 +521,15 @@ router.get("/getAppointment/:id", async (req, res) => {
     .join("Doctor", "Appointment.doctorId", "=", "Doctor.empId")
     .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
     // .join("Room","Doctor.departmentId","=","Room.departmentId")
-    .where('Department.departmentId', req.params.id)
+    .where("Department.departmentId", req.params.id)
     .select();
 
   res.send(data);
 });
 
 router.get("/updateAllPerDay", async (req, res) => {
-  console.log('เข้า update perday')
-  var getDate = new Date(momentTz.tz(new Date(), "Asia/Bangkok").format())
+  console.log("เข้า update perday");
+  var getDate = new Date(momentTz.tz(new Date(), "Asia/Bangkok").format());
   var month = new Array(
     "jan",
     "feb",
@@ -569,38 +562,38 @@ router.get("/updateAllPerDay", async (req, res) => {
     .select("Timetable.doctorId")
     .where("day", day[curr_date])
     .whereIn("month", month[curr_month])
-    .whereIn("year", curr_year)
+    .whereIn("year", curr_year);
 
   diff_minutes = (tmp2, tmp1) => {
-    var diff = (tmp2.getTime() - tmp1.getTime()) / 1000
+    var diff = (tmp2.getTime() - tmp1.getTime()) / 1000;
     diff /= 60;
-    return Math.abs(Math.round(diff))
-  }
+    return Math.abs(Math.round(diff));
+  };
   for (let i = 0; i < listEmpId.length; i++) {
-    let range = 0
-    let sumRange = 0
+    let range = 0;
+    let sumRange = 0;
     dateQueue = await knex
       .table("Queue")
       .select("date")
       .where("doctorId", listEmpId[i].doctorId)
-      .where("statusId", 4)
+      .where("statusId", 4);
     if (dateQueue.length != 0) {
       for (let j = 0; j < dateQueue.length; j++) {
-        let tmp1 = new Date(dateQueue[j].date)
-        console.log('tmp1 ' + tmp1)
+        let tmp1 = new Date(dateQueue[j].date);
+        console.log("tmp1 " + tmp1);
         if (dateQueue.length - 1 == j) {
-          range = range + 0
+          range = range + 0;
         } else {
-          let tmp2 = new Date(dateQueue[j + 1].date)
-          console.log("tmp2: " + tmp2)
-          range = diff_minutes(tmp2, tmp1)
-          console.log('range ' + range)
-          sumRange += range
-          console.log('sum ' + sumRange)
+          let tmp2 = new Date(dateQueue[j + 1].date);
+          console.log("tmp2: " + tmp2);
+          range = diff_minutes(tmp2, tmp1);
+          console.log("range " + range);
+          sumRange += range;
+          console.log("sum " + sumRange);
         }
       }
-      var avgMinutes = sumRange / dateQueue.length
-      console.log(avgMinutes)
+      var avgMinutes = sumRange / dateQueue.length;
+      console.log(avgMinutes);
       updateAvgTime = await knex
         .table("Doctor")
         .where("empId", listEmpId[i].doctorId)
@@ -610,7 +603,7 @@ router.get("/updateAllPerDay", async (req, res) => {
       break;
     }
   }
-  res.send('Success')
+  res.send("Success");
 });
 
 router.post("/updateAppointment", async (req, res) => {
@@ -649,32 +642,29 @@ router.post("/updateDoctorTimetable", async (req, res) => {
   res.send(data);
 });
 
-
 router.delete("/deleteAppointment/:id", async (req, res) => {
   await knex
     .table("Appointment")
-    .where("appointmentId", '=', req.params.id)
-    .del()
-  res.send('success');
+    .where("appointmentId", "=", req.params.id)
+    .del();
+  res.send("success");
 });
-
 
 router.delete("/deleteTimetable/:id", async (req, res) => {
   await knex
     .table("Timetable")
-    .where("timetableId", '=', req.params.id)
-    .del()
-  res.send('success');
+    .where("timetableId", "=", req.params.id)
+    .del();
+  res.send("success");
 });
 
 router.delete("/deleteListQueue/:id", async (req, res) => {
   await knex
     .table("Queue")
-    .where("runningNumber", '=', req.params.id)
-    .del()
-  res.send('success');
+    .where("runningNumber", "=", req.params.id)
+    .del();
+  res.send("success");
 });
-
 
 //check Group
 router.post("/checkGroupId", async (req, res) => {
@@ -684,12 +674,12 @@ router.post("/checkGroupId", async (req, res) => {
     .where("group", req.body.group)
     .where("statusId", 5)
     .select()
-    .orderBy('step', 'asc')
+    .orderBy("step", "asc");
   // res.send("check Success")
-  res.send(data)
+  res.send(data);
 });
 
-//checkGroup for Roomback 
+//checkGroup for Roomback
 router.post("/checkGroupRoomback", async (req, res) => {
   // console.log('group ', req.body.group)
   var data = await knex
@@ -698,9 +688,9 @@ router.post("/checkGroupRoomback", async (req, res) => {
     .where("statusId", 4)
     // .where("roomId",req.body.roomId)
     .select()
-    .orderBy('step', 'asc')
+    .orderBy("step", "asc");
   // res.send("check Success")
-  res.send(data)
+  res.send(data);
 });
 
 //Call function Adminhome.js and forwward
@@ -713,15 +703,19 @@ router.post("/updateQueue", async (req, res) => {
     // .where("statusId",1)
     .update({
       statusId: req.body.statusId,
-      date: new Date(momentTz().tz(req.body.date, "Asia/Bangkok").format()),
+      date: new Date(
+        momentTz()
+          .tz(req.body.date, "Asia/Bangkok")
+          .format()
+      ),
       roomBack: req.body.roomBack
     });
   res.send("UPDATE SUCCESS");
 });
 
-///user step at user page 
+///user step at user page
 router.post("/getAllStepQueue", async (req, res) => {
-  console.log('เข้าเข้าเข้าเข้าเข้า step')
+  console.log("เข้าเข้าเข้าเข้าเข้า step");
   var data = await knex
     .table("Queue")
     .join("Room", "Queue.roomId", "=", "Room.roomId")
@@ -733,14 +727,13 @@ router.post("/getAllStepQueue", async (req, res) => {
     .select()
     .where("Queue.HN", req.body.HN)
     .where("Queue.group", req.body.group)
-    .orderBy('step', 'asc')
+    .orderBy("step", "asc");
 
-  console.log('dataatatatat   ', data)
+  console.log("dataatatatat   ", data);
   res.send(data);
 });
 
 ///All Q
-
 
 ///
 router.post("/getAllAppointment", async (req, res) => {
@@ -751,45 +744,47 @@ router.post("/getAllAppointment", async (req, res) => {
     .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
     // .join("Room","Department.departmentId","=","Room.departmentId")
     .select()
-    .where("Appointment.HN", req.body.HN)
+    .where("Appointment.HN", req.body.HN);
   res.send(data);
 });
 
 //AC5cf1bd553585fc72b5ac8eb0ec2c43e7
 //ACd6b78055eb3dbbebbb32eafe7f6d275e
-const accountSid = 'AC5cf1bd553585fc72b5ac8eb0ec2c43e7'
+const accountSid = "AC5cf1bd553585fc72b5ac8eb0ec2c43e7";
 //bd1dd85fb32c4ff7598380f447cecc57
 //45179b9b7d88c4989d13a81c82f16d91
-const authToken = 'bd1dd85fb32c4ff7598380f447cecc57'
-const client = require('twilio')(accountSid, authToken);
+const authToken = "bd1dd85fb32c4ff7598380f447cecc57";
+const client = require("twilio")(accountSid, authToken);
 
-router.post('/sendText', (req, res) => {
-  console.log('เข้าๆๆๆๆๆๆๆๆ ', req.body.textmessage)
-  const recipient = req.body.recipient
-  const textmessage = req.body.textmessage
-  client.messages.create({
-    body: textmessage,
-    from: '+17257264897',
-    //+18647540772
-    //+17257264897
-    to: recipient
-  },
-    (err, message) => {
-      console.log(message.sid);
-    }
-  )
-  // .then(message => console.log(message.sid))
-  // .done();
-})
+router.post("/sendText", (req, res) => {
+  console.log("เข้าๆๆๆๆๆๆๆๆ ", req.body.textmessage);
+  const recipient = req.body.recipient;
+  const textmessage = req.body.textmessage;
+  client.messages
+    .create(
+      {
+        body: textmessage,
+        from: "+17257264897",
+        //+18647540772
+        //+17257264897
+        to: recipient
+      },
+      (err, message) => {
+        console.log("message ", message.sid);
+      }
+    )
+    .then(message => console.log(message.sid))
+    .done();
+});
 
 router.post("/updateStep", async (req, res) => {
-  console.log("!!!!!UPDATE")
+  console.log("!!!!!UPDATE");
   // console.log('body   ', req.body)
   var stepInGroup = await knex
     .table("Queue")
     .select()
     .where("group", req.body.group)
-    .orderBy('step', 'asc')
+    .orderBy("step", "asc");
   // console.log('stepstepstep :: length' + stepInGroup.length, stepInGroup)
   if (stepInGroup.length > 0) {
     stepInGroup.map(async (data, i) => {
@@ -803,14 +798,14 @@ router.post("/updateStep", async (req, res) => {
         await knex
           .table("Queue")
           .where("step", data.step)
-          .where('group', req.body.group)
+          .where("group", req.body.group)
           .update({
             step: data.step + 1
           });
       }
-    })
+    });
   }
-  res.send('success')
+  res.send("success");
 });
 
 router.post("/updateStepQ", async (req, res) => {
@@ -818,11 +813,10 @@ router.post("/updateStepQ", async (req, res) => {
     .table("Queue")
     .where("runningNumber", req.body.runningNumber)
     .update({
-      step: req.body.step,
+      step: req.body.step
     });
-  res.send('success')
-
-})
+  res.send("success");
+});
 
 //Get phone Number to use for otp
 router.post("/getPhoneNumber", async (req, res) => {
@@ -831,7 +825,7 @@ router.post("/getPhoneNumber", async (req, res) => {
     .select("phonenumber")
     .where("HN", req.body.HN);
   res.send(data);
-})
+});
 
 router.post("/updateStatus", async (req, res) => {
   var data = await knex
@@ -841,173 +835,175 @@ router.post("/updateStatus", async (req, res) => {
     .where("runningNumber", req.body.runningNumber)
     // .where("statusId",1)
     .update({
-      statusId: req.body.statusId,
+      statusId: req.body.statusId
     });
-    res.send('success')
-})
+  res.send("success");
+});
 
 //check remaining of patientLimit
 router.post("/getRemainingDoctor", async (req, res) => {
   var doctorInDate = await knex
-    .table('Timetable')
+    .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
-    .where('date', req.body.Date)
+    .where("date", req.body.Date)
     .where("day", req.body.day)
     .where("month", req.body.month)
     .where("Year", req.body.year)
     .where("doctorId", req.body.doctorId)
     .where("departmentId", req.body.departmentId)
-    .select()
+    .select();
 
   var patientLimit = await knex
-    .table('Timetable')
-    .where('date', req.body.Date)
+    .table("Timetable")
+    .where("date", req.body.Date)
     .where("day", req.body.day)
     .where("month", req.body.month)
     .where("Year", req.body.year)
     .where("doctorId", req.body.doctorId)
-    .select('patientLimit')
+    .select("patientLimit");
   var countQueue = await knex
     .table("Queue")
-    .count('queueId as countQueueId')
-    .where('doctorId', req.body.doctorId)
+    .count("queueId as countQueueId")
+    .where("doctorId", req.body.doctorId);
 
   var countAppointment = await knex
     .table("Appointment")
-    .count('appointmentId as countAppointmentId')
-    .where('doctorId', req.body.doctorId)
-    .where('date', req.body.Date)
+    .count("appointmentId as countAppointmentId")
+    .where("doctorId", req.body.doctorId)
+    .where("date", req.body.Date);
 
-  var sum = countQueue[0].countQueueId + countAppointment[0].countAppointmentId
-  let remaining = patientLimit[0].patientLimit - sum
+  var sum = countQueue[0].countQueueId + countAppointment[0].countAppointmentId;
+  let remaining = patientLimit[0].patientLimit - sum;
 
   const data = Object.assign({ remaining }, doctorInDate);
   res.send(data);
-
-})
+});
 
 //Add or Delete Department Management
-//add Patients 
+//add Patients
 router.post("/addPatient", async (req, res) => {
-  await knex
-    .table("Patient")
-    .insert({
-      HN: req.body.HN,
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      dob: req.body.dob,
-      gender: req.body.gender,
-      phonenumber: req.body.phonenumber
-    });
-  res.send('success')
-})
+  await knex.table("Patient").insert({
+    HN: req.body.HN,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    dob: req.body.dob,
+    gender: req.body.gender,
+    phonenumber: req.body.phonenumber
+  });
+  res.send("success");
+});
 
 //addDoctors
 router.post("/addDoctors", async (req, res) => {
-  await knex
-    .table("Doctor")
-    .insert({
-      firstname: req.body.firstname,
-      lastname: req.body.lastname,
-      avgtime: req.body.avgtime,
-      empId: req.body.empId,
-      departmentId: req.body.departmentId,
-    });
-  res.send('success')
-})
+  await knex.table("Doctor").insert({
+    firstname: req.body.firstname,
+    lastname: req.body.lastname,
+    avgtime: req.body.avgtime,
+    empId: req.body.empId,
+    departmentId: req.body.departmentId
+  });
+  res.send("success");
+});
 
-//add department 
+//add department
 router.post("/addDepartment", async (req, res) => {
-  await knex
-    .table("Department")
-    .insert({
-      Department: req.body.Department,
-      type: req.body.type
-    });
-  res.send('success')
-})
-//add room 
+  await knex.table("Department").insert({
+    Department: req.body.Department,
+    type: req.body.type
+  });
+  res.send("success");
+});
+//add room
 router.post("/addRoom", async (req, res) => {
-  await knex
-    .table("Room")
-    .insert({
-      roomId: req.body.roomId,
-      floor: req.body.floor,
-      departmentId: req.body.departmentId,
-      building: req.body.building,
-    });
-  res.send('success')
-})
+  await knex.table("Room").insert({
+    roomId: req.body.roomId,
+    floor: req.body.floor,
+    departmentId: req.body.departmentId,
+    building: req.body.building
+  });
+  res.send("success");
+});
 //request otp
 router.post("/requestOTP", async (req, res) => {
-  console.log(req.body.recipient)
+  console.log(req.body.recipient);
   try {
-    const result = await requestOTP(req.body.recipient)
-    res.send(result)
+    const result = await requestOTP(req.body.recipient);
+    res.send(result);
   } catch (error) {
-    res.send(error)
+    res.send(error);
   }
-})
+});
 //validate otp
 router.post("/validateOTP", async (req, res) => {
-  console.log(req.body.recipient)
+  console.log(req.body.recipient);
   try {
-    const result = await validateOTP(req.body.requestId, req.body.code)
-    console.log('result', result)
-    res.send(result)
+    const result = await validateOTP(req.body.requestId, req.body.code);
+    console.log("result", result);
+    res.send(result);
   } catch (error) {
-    res.send(error)
+    res.send(error);
   }
-})
+});
 
-const requestOTP = (recipient) => new Promise((resolve, reject) => {
-  nexmo.verify.request({ number: recipient, brand: 'patientQueue OTP' }, (err, result) => {
-    if (err) reject({ message: 'Server Error' })
-    console.log('asdasdasdasdasd ', result)
-    if (result && result.status == '0') {
-      resolve({ requestId: result.request_id })
-      return
-    }
-    reject({ message: result, requestId: result.request_id })
-  })
-})
-
-const validateOTP = (requestId, code) => new Promise((resolve, reject) => {
-  nexmo.verify.check({ request_id: requestId, code }, (err, result) => {
-    if (err) reject({ message: 'Server Error' })
-    console.log("validateOTP", result);
-    if (result && result.status == '0') {
-      resolve({ message: result })
-      return
-    }
-    reject({ message: result, requestId: requestId })
-    reject({ message: result, requestId: requestId })
-  })
-})
-
-const cancelOTP = (requestId) => new Promise((resolve, reject) => {
-  // { status: '6', error_text: 'The requestId \'01a218e770de499cb7b27b6dee3d144e\' does not exist or its no longer active.'}
-  // { status: '10', error_text: 'Concurrent verifications to the same number are not allowed'}
-  // { status: '19', error_text: 'Verification request [\'53c28372047c483f8e6e428d44093148\'] can\'t be cancelled within the first 30 seconds.'}
-  // { status : "19",error_text: "Verification request  ['7e7563aa38704911b36a67f2cd5d3759'] can't be cancelled now. Too many attempts to re-deliver have already been made."}
-  nexmo.verify.control({ request_id: requestId, cmd: 'cancel' }, (err, result) => {
-    if (err) reject({ message: err })
-    console.log("CANCEL!!!!", result)
-    if (result && result.status == '0') {
-      resolve({ message: 'cancel success!' })
-      return
-    } else {
-      reject({ message: result })
-    }
+const requestOTP = recipient =>
+  new Promise((resolve, reject) => {
+    nexmo.verify.request(
+      { number: recipient, brand: "patientQueue OTP" },
+      (err, result) => {
+        if (err) reject({ message: "Server Error" });
+        console.log("asdasdasdasdasd ", result);
+        if (result && result.status == "0") {
+          resolve({ requestId: result.request_id });
+          return;
+        }
+        reject({ message: result, requestId: result.request_id });
+      }
+    );
   });
-})
 
+const validateOTP = (requestId, code) =>
+  new Promise((resolve, reject) => {
+    nexmo.verify.check({ request_id: requestId, code }, (err, result) => {
+      if (err) reject({ message: "Server Error" });
+      console.log("validateOTP", result);
+      if (result && result.status == "0") {
+        resolve({ message: result });
+        return;
+      }
+      reject({ message: result, requestId: requestId });
+      reject({ message: result, requestId: requestId });
+    });
+  });
+
+router.post("/cancelOTP", async (req, res) => {
+  let data = await cancelOTP(req.body.requestId);
+  res.send(data)
+});
+
+const cancelOTP = requestId =>
+  new Promise((resolve, reject) => {
+    // { status: '6', error_text: 'The requestId \'01a218e770de499cb7b27b6dee3d144e\' does not exist or its no longer active.'}
+    // { status: '10', error_text: 'Concurrent verifications to the same number are not allowed'}
+    // { status: '19', error_text: 'Verification request [\'53c28372047c483f8e6e428d44093148\'] can\'t be cancelled within the first 30 seconds.'}
+    // { status : "19",error_text: "Verification request  ['7e7563aa38704911b36a67f2cd5d3759'] can't be cancelled now. Too many attempts to re-deliver have already been made."}
+    nexmo.verify.control(
+      { request_id: requestId, cmd: "cancel" },
+      (err, result) => {
+        if (err) reject({ message: err });
+        console.log("CANCEL!!!!", result);
+        if (result && result.status == "0") {
+          resolve({ message: "cancel success!" });
+          return;
+        } else {
+          reject({ message: result });
+        }
+      }
+    );
+  });
 
 //getDepartment
 router.get("/getAllDepartment", async (req, res) => {
-  var data = await knex
-    .table("Department")
-    .select()
+  var data = await knex.table("Department").select();
   res.send(data);
 });
 
@@ -1016,7 +1012,7 @@ router.get("/getAllRoom", async (req, res) => {
   var data = await knex
     .table("Room")
     .join("Department", "Room.departmentId", "=", "Department.departmentId")
-    .select()
+    .select();
   res.send(data);
 });
 
@@ -1025,7 +1021,7 @@ router.get("/getDoctors", async (req, res) => {
   var data = await knex
     .table("Doctor")
     .join("Department", "Doctor.departmentId", "=", "Department.departmentId")
-    .select()
+    .select();
   res.send(data);
 });
 
@@ -1033,37 +1029,36 @@ router.get("/getDoctors", async (req, res) => {
 router.delete("/deleteDepartment/:departmentId", async (req, res) => {
   await knex
     .table("Department")
-    .where("departmentId", '=', req.params.departmentId)
-    .del()
-  res.send('success');
+    .where("departmentId", "=", req.params.departmentId)
+    .del();
+  res.send("success");
 });
 
 //deletePatient
 router.delete("/deletePatient/:firstname", async (req, res) => {
-  console.log(req.params)
+  console.log(req.params);
   await knex
     .table("Patient")
-    .where("firstName", 'like', req.params.firstname)
-    .del()
-  res.send('success');
+    .where("firstName", "like", req.params.firstname)
+    .del();
+  res.send("success");
 });
-
 
 //deleteDoctors
 router.delete("/deleteDoctors/:empId", async (req, res) => {
   await knex
     .table("Doctor")
-    .where("empId", '=', req.params.empId)
-    .del()
-  res.send('success');
+    .where("empId", "=", req.params.empId)
+    .del();
+  res.send("success");
 });
 //DELETE ROom
 router.delete("/deleteRoom/:roomId", async (req, res) => {
   await knex
     .table("Room")
-    .where("roomId", '=', req.params.roomId)
-    .del()
-  res.send('success');
+    .where("roomId", "=", req.params.roomId)
+    .del();
+  res.send("success");
 });
 
 //get doctor except departmentId
@@ -1072,10 +1067,10 @@ router.post("/getAllDoctors", async (req, res) => {
     .table("Timetable")
     .join("Doctor", "Timetable.doctorId", "=", "Doctor.empId")
     .select()
-    .where('Date', req.body.Date)
+    .where("Date", req.body.Date)
     .where("day", req.body.day)
     .where("month", req.body.month)
-    .where("Year", req.body.year)
+    .where("Year", req.body.year);
   res.send(data);
 });
 
@@ -1083,40 +1078,40 @@ router.post("/getAllDoctors", async (req, res) => {
 router.post("/updateLimit", async (req, res) => {
   await knex
     .table("Timetable")
-    .where('timetableId', req.body.timetableId)
+    .where("timetableId", req.body.timetableId)
     .update({
       patientLimit: req.body.patientLimit
-    })
-  res.send('success')
-})
+    });
+  res.send("success");
+});
 
 router.post("/updateAbsent", async (req, res) => {
   await knex
     .table("Queue")
-    .where('runningNumber', req.body.runningNumber)
+    .where("runningNumber", req.body.runningNumber)
     .update({
       statusId: 6
-    })
-  res.send('success')
-})
+    });
+  res.send("success");
+});
 //updateQueueAbsent
 router.post("/updateQueueAbsent", async (req, res) => {
   await knex
     .table("Queue")
-    .where('runningNumber', req.body.runningNumber)
+    .where("runningNumber", req.body.runningNumber)
     .update({
       statusId: 1
-    })
-  res.send('success')
-})
+    });
+  res.send("success");
+});
 
 //getDataAppointment
 router.post("/getDataAppointment", async (req, res) => {
   var data = await knex
     .table("Appointment")
     // .join("Timetable", "Appointment.doctorId", "=", "Timetable.doctorId")
-    .where('appointmentId', req.body.appointmentId)
-    .select()
+    .where("appointmentId", req.body.appointmentId)
+    .select();
   // const data = Object.assign({ remaining }, doctorInDate);
   res.send(data);
 });
@@ -1129,7 +1124,7 @@ router.post("/getDataTimetable", async (req, res) => {
     .where("day", req.body.day)
     .where("Date", req.body.date)
     .where("month", req.body.month)
-    .where("year", req.body.year)
+    .where("year", req.body.year);
   res.send(data);
 });
 module.exports = router;
