@@ -801,12 +801,13 @@ router.post("/sendText", (req, res) => {
         //+17257264897
         to: recipient
       },
-      (err, message) => {
-        console.log("message ", message.sid);
-      }
+      // (err, message) => {
+      //   console.log("message ", message.sid);
+      // }
     )
     .then(message => console.log(message.sid))
     .done();
+    res.send('sms has sent success')
 });
 
 router.post("/updateStep", async (req, res) => {
