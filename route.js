@@ -22,13 +22,15 @@ const enums = require("authy-client").enums;
 
 const Nexmo = require("nexmo");
 const nexmo = new Nexmo({
-  apiKey: "929e744c",
-  apiSecret: "qIsPlZ3NK0nJp3XY"
+  //929e744c
+  //qIsPlZ3NK0nJp3XY
+  apiKey: "385aeb8a",
+  apiSecret: "KRHWrMSZ4rVZOg2E"
 });
 
 //Check Patient Data in Adminhome.js
 router.get("/getPatient", async (req, res) => {
-  var data = await knex.table("Patient").select();
+  let data = await knex.table("Patient").select();
   res.send(data);
 });
 
